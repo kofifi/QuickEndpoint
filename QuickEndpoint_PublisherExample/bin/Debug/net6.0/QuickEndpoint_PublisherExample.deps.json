@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "QuickEndpoint_PublisherExample/1.0.0": {
+        "runtime": {
+          "QuickEndpoint_PublisherExample.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "QuickEndpoint_PublisherExample/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

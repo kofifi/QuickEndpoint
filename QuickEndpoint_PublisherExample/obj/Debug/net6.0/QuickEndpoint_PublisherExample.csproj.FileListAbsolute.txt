@@ -1,0 +1,15 @@
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/bin/Debug/net6.0/QuickEndpoint_PublisherExample
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/bin/Debug/net6.0/QuickEndpoint_PublisherExample.deps.json
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/bin/Debug/net6.0/QuickEndpoint_PublisherExample.runtimeconfig.json
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/bin/Debug/net6.0/QuickEndpoint_PublisherExample.dll
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/bin/Debug/net6.0/QuickEndpoint_PublisherExample.pdb
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/QuickEndpoint_PublisherExample.csproj.AssemblyReference.cache
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/QuickEndpoint_PublisherExample.GeneratedMSBuildEditorConfig.editorconfig
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/QuickEndpoint_PublisherExample.AssemblyInfoInputs.cache
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/QuickEndpoint_PublisherExample.AssemblyInfo.cs
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/QuickEndpoint_PublisherExample.csproj.CoreCompileInputs.cache
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/QuickEndpoint_PublisherExample.dll
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/refint/QuickEndpoint_PublisherExample.dll
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/QuickEndpoint_PublisherExample.pdb
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/QuickEndpoint_PublisherExample.genruntimeconfig.cache
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/obj/Debug/net6.0/ref/QuickEndpoint_PublisherExample.dll

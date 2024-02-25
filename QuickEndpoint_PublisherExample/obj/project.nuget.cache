@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "qADJCVAZLDxNSd6imhvoObxrCD5bF8GfDLBx672/tqldY5isPdsW7uJ43TLm/aoVGZAlHkXjKbRcQhrRGoOLhQ==",
+  "success": true,
+  "projectFilePath": "/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_PublisherExample/QuickEndpoint_PublisherExample.csproj",
+  "expectedPackageFiles": [
+    "/home/kofi/.nuget/packages/microsoft.netcore.app.ref/6.0.8/microsoft.netcore.app.ref.6.0.8.nupkg.sha512",
+    "/home/kofi/.nuget/packages/microsoft.aspnetcore.app.ref/6.0.8/microsoft.aspnetcore.app.ref.6.0.8.nupkg.sha512",
+    "/home/kofi/.nuget/packages/microsoft.netcore.app.host.linux-x64/6.0.8/microsoft.netcore.app.host.linux-x64.6.0.8.nupkg.sha512"
+  ],
+  "logs": []
+}

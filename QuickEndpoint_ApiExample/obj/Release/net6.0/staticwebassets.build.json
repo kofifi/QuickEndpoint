@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "z1Ai6Nnwy89QsXEZfI9CHGoIGpwf4X2tYk1OWsoxIkE=",
+  "Source": "QuickEndpoint_ApiExample",
+  "BasePath": "_content/QuickEndpoint_ApiExample",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

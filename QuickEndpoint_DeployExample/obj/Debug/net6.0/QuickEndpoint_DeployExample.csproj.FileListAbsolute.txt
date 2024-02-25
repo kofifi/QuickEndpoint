@@ -1,0 +1,15 @@
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/bin/Debug/net6.0/QuickEndpoint_DeployExample
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/bin/Debug/net6.0/QuickEndpoint_DeployExample.deps.json
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/bin/Debug/net6.0/QuickEndpoint_DeployExample.runtimeconfig.json
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/bin/Debug/net6.0/QuickEndpoint_DeployExample.dll
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/bin/Debug/net6.0/QuickEndpoint_DeployExample.pdb
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/QuickEndpoint_DeployExample.csproj.AssemblyReference.cache
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/QuickEndpoint_DeployExample.GeneratedMSBuildEditorConfig.editorconfig
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/QuickEndpoint_DeployExample.AssemblyInfoInputs.cache
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/QuickEndpoint_DeployExample.AssemblyInfo.cs
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/QuickEndpoint_DeployExample.csproj.CoreCompileInputs.cache
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/QuickEndpoint_DeployExample.dll
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/refint/QuickEndpoint_DeployExample.dll
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/QuickEndpoint_DeployExample.pdb
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/QuickEndpoint_DeployExample.genruntimeconfig.cache
+/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/Debug/net6.0/ref/QuickEndpoint_DeployExample.dll
