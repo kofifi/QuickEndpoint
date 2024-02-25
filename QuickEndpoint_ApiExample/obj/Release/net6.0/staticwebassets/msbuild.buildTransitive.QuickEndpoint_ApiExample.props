@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\QuickEndpoint_ApiExample.props" />
+</Project>

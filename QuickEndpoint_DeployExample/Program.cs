@@ -5,66 +5,63 @@ public class InstallerScriptGenerator
 {
     public static void GenerateScript(string appName, string pathToTarGz, string entryPoint)
     {
-string scriptTemplate = @"
-#!/bin/bash
+        string nssmPath = @"E:\source_code\QuickEndpoint\Tools\nssm-2.24\win64\nssm.exe";
+        string scriptTemplate = $@"
+param(
+    [string]$ServiceName = '{appName}',
+    [string]$TarGzPath = '{pathToTarGz}',
+    [string]$EntryPoint = '{entryPoint}'
+)
 
-APP_NAME={{AppName}}
-SERVICE_FILE=/etc/systemd/system/$APP_NAME.service
-APP_DIR=/var/www/$APP_NAME
+$serviceName = $ServiceName
+$serviceDisplayName = $ServiceName
+$appDirectory = Join-Path 'E:\source_code\QuickEndpoint\Publish' $ServiceName
+$nssmPath = '{nssmPath}'
 
-# Check if the service is already installed
-if systemctl --quiet is-active $APP_NAME.service; then
-  echo ""$APP_NAME service is already installed. Reinstalling...""
-  # Stop the service if it's running
-  systemctl stop $APP_NAME.service
-else
-  echo ""Installing $APP_NAME service...""
-fi
+# Ensure the application directory exists
+if (-Not (Test-Path $appDirectory)) {{
+    New-Item -ItemType Directory -Path $appDirectory
+}}
 
-# Kopiowanie aplikacji
-mkdir -p $APP_DIR
-tar -xzf {{PathToTarGz}} -C $APP_DIR
+# Extract the application archive
+Write-Output 'Extracting application archive...'
+& tar -xzf $TarGzPath -C $appDirectory
 
-# Tworzenie pliku usługi systemd
-echo ""[Unit]
-Description=$APP_NAME Service
+$exePath = Join-Path $appDirectory $EntryPoint
 
-[Service]
-WorkingDirectory=$APP_DIR
-ExecStart=/usr/bin/dotnet $APP_DIR/{{EntryPoint}}
-Restart=always
+# Check if the service already exists with NSSM and remove it if necessary
+$status = & $nssmPath status $serviceName
+if ($status -ne 'SERVICE_NOT_FOUND') {{
+    Write-Output 'Service already exists. Removing existing service...'
+    & $nssmPath stop $serviceName
+    & $nssmPath remove $serviceName confirm
+}}
 
-[Install]
-WantedBy=multi-user.target"" > $SERVICE_FILE
+# Use NSSM to install the service
+Write-Output 'Installing service with NSSM...'
+& $nssmPath install $serviceName `""$exePath`""
 
-# Reload systemd manager configuration
-systemctl daemon-reload
+# Set service description with NSSM (optional)
+& $nssmPath set $serviceName Description `""$serviceDisplayName`""
 
-# Start and enable the service
-systemctl start $APP_NAME.service
-systemctl enable $APP_NAME.service
-
-echo ""$APP_NAME service installed and started.""
+# Attempt to start the service with NSSM
+try {{
+    & $nssmPath start $serviceName
+    Write-Output '$serviceName service installed and started with NSSM.'
+}} catch {{
+    Write-Output 'Failed to start the service. Please check the service configuration.'
+}}
 ";
-
-        scriptTemplate = scriptTemplate.Replace("{{AppName}}", appName)
-                                       .Replace("{{PathToTarGz}}", pathToTarGz)
-                                       .Replace("{{EntryPoint}}", entryPoint);
-
-        // Określenie ścieżki do folderu Installers
-        string installersDirPath = Path.Combine("/home/kofi/Main/VSCProjects/QuickEndpoint", "Installers");
-        
-        // Sprawdzenie, czy folder Installers istnieje, jeśli nie - utworzenie go
+        string installersDirPath = @"E:\source_code\QuickEndpoint\Installers";
         if (!Directory.Exists(installersDirPath))
         {
             Directory.CreateDirectory(installersDirPath);
         }
 
-        // Zapisywanie skryptu w folderze Installers
-        string scriptPath = Path.Combine(installersDirPath, "install.sh");
+        string scriptPath = Path.Combine(installersDirPath, $"{appName}_install.ps1");
         File.WriteAllText(scriptPath, scriptTemplate);
-        
-        Console.WriteLine($"Skrypt instalacyjny został zapisany w: {scriptPath}");
+
+        Console.WriteLine($"Installer script has been saved at: {scriptPath}");
     }
 }
 
@@ -72,7 +69,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        // Przykładowe użycie
-        InstallerScriptGenerator.GenerateScript("QuickEndpoint_ApiExample", "/home/kofi/Main/VSCProjects/QuickEndpoint/Publish/QuickEndpoint_ApiExample.tar.gz", "QuickEndpoint_ApiExample.dll");
+        InstallerScriptGenerator.GenerateScript("QuickEndpoint_ApiExample", @"E:\source_code\QuickEndpoint\Publish\QuickEndpoint_ApiExample.tar.gz", "QuickEndpoint_ApiExample.exe");
     }
 }

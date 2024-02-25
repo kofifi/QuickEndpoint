@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Installers",
+    "\\Publish",
+    "\\QuickEndpoint_DeployExample",
+    "\\QuickEndpoint_PublisherExample",
+    "\\QuickEndpoint_PublisherExample\\bin\\Debug",
+    "\\QuickEndpoint_PublisherExample\\bin\\Debug\\net6.0",
+    "\\Tools",
+    "\\Tools\\nssm-2.24",
+    "\\Tools\\nssm-2.24\\win64"
+  ],
+  "SelectedNode": "\\Publish\\QuickEndpoint_ApiExample",
+  "PreviewInSolutionExplorer": false
+}

@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\QuickEndpoint_ApiExample.props" />
+</Project>
