@@ -1,25 +1,32 @@
 {
   "format": 1,
   "restore": {
-    "/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/QuickEndpoint_DeployExample.csproj": {}
+    "E:\\source_code\\QuickEndpoint\\QuickEndpoint_DeployExample\\QuickEndpoint_DeployExample.csproj": {}
   },
   "projects": {
-    "/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/QuickEndpoint_DeployExample.csproj": {
+    "E:\\source_code\\QuickEndpoint\\QuickEndpoint_DeployExample\\QuickEndpoint_DeployExample.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/QuickEndpoint_DeployExample.csproj",
+        "projectUniqueName": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_DeployExample\\QuickEndpoint_DeployExample.csproj",
         "projectName": "QuickEndpoint_DeployExample",
-        "projectPath": "/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/QuickEndpoint_DeployExample.csproj",
-        "packagesPath": "/home/kofi/.nuget/packages/",
-        "outputPath": "/home/kofi/Main/VSCProjects/QuickEndpoint/QuickEndpoint_DeployExample/obj/",
+        "projectPath": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_DeployExample\\QuickEndpoint_DeployExample.csproj",
+        "packagesPath": "C:\\Users\\Konrad\\.nuget\\packages\\",
+        "outputPath": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_DeployExample\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/home/kofi/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Konrad\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -32,6 +39,11 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -48,26 +60,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.8, 6.0.8]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.linux-x64",
-              "version": "[6.0.8, 6.0.8]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.8, 6.0.8]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/6.0.400/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.200\\RuntimeIdentifierGraph.json"
         }
       }
     }

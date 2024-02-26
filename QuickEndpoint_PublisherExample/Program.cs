@@ -6,34 +6,34 @@ class Program
 {
     static void Main(string[] args)
     {
-        // Ścieżki i nazwy
+        // Paths and names
         var projectName = "QuickEndpoint_ApiExample";
-        var projectBaseDir = "/home/kofi/Main/VSCProjects/QuickEndpoint";
+        var projectBaseDir = "E:\\source_code\\QuickEndpoint";
         var projectDir = Path.Combine(projectBaseDir, projectName);
-        var tempPublishDir = Path.Combine(projectBaseDir, "tempPublish"); // Tymczasowy folder do publikacji
-        var archiveDir = Path.Combine(projectBaseDir, "Publish"); // Folder na archiwum
+        var tempPublishDir = Path.Combine(projectBaseDir, "tempPublish"); // Temporary folder for publishing
+        var archiveDir = Path.Combine(projectBaseDir, "Publish"); // Folder for the archive
         var archivePath = Path.Combine(archiveDir, $"{projectName}.tar.gz");
 
-        // Tworzenie folderu na archiwum, jeśli nie istnieje
+        // Create archive folder if it does not exist
         if (!Directory.Exists(archiveDir))
         {
             Directory.CreateDirectory(archiveDir);
         }
 
-        // Usuwanie poprzednich wyników
+        // Removing previous results
         if (Directory.Exists(tempPublishDir))
         {
-            Console.WriteLine($"Usuwanie istniejącego katalogu publikacji: {tempPublishDir}");
+            Console.WriteLine($"Removing existing publication directory: {tempPublishDir}");
             Directory.Delete(tempPublishDir, true);
         }
         if (File.Exists(archivePath))
         {
-            Console.WriteLine($"Usuwanie istniejącego archiwum: {archivePath}");
+            Console.WriteLine($"Removing existing archive: {archivePath}");
             File.Delete(archivePath);
         }
 
-        // Publikowanie aplikacji
-        Console.WriteLine("Publikowanie aplikacji...");
+        // Publishing the application
+        Console.WriteLine("Publishing the application...");
         var publishProcess = Process.Start(new ProcessStartInfo
         {
             FileName = "dotnet",
@@ -44,8 +44,8 @@ class Program
         publishProcess.WaitForExit();
         Console.WriteLine(publishProcess.StandardOutput.ReadToEnd());
 
-        // Pakowanie do archiwum .tar.gz
-        Console.WriteLine("Pakowanie aplikacji do archiwum .tar.gz...");
+        // Packing into a .tar.gz archive
+        Console.WriteLine("Packing the application into a .tar.gz archive...");
         var tarProcess = Process.Start(new ProcessStartInfo
         {
             FileName = "tar",
@@ -56,13 +56,13 @@ class Program
         tarProcess.WaitForExit();
         Console.WriteLine(tarProcess.StandardOutput.ReadToEnd());
 
-        // Usuwanie tymczasowego katalogu publikacji
+        // Removing the temporary publishing directory
         if (Directory.Exists(tempPublishDir))
         {
-            Console.WriteLine($"Usuwanie tymczasowego katalogu publikacji: {tempPublishDir}");
+            Console.WriteLine($"Removing temporary publication directory: {tempPublishDir}");
             Directory.Delete(tempPublishDir, true);
         }
 
-        Console.WriteLine($"Aplikacja została opublikowana i spakowana do {archivePath}");
+        Console.WriteLine($"The application has been published and packed into {archivePath}");
     }
 }
