@@ -1,0 +1,13 @@
+E:\source_code\QuickEndpoint\Installers\QuickEndpoint_ApiExample.exe
+E:\source_code\QuickEndpoint\Installers\appsettings.Development.json
+E:\source_code\QuickEndpoint\Installers\appsettings.json
+E:\source_code\QuickEndpoint\Installers\QuickEndpoint_ApiExample.dll
+E:\source_code\QuickEndpoint\Installers\QuickEndpoint_ApiExample.deps.json
+E:\source_code\QuickEndpoint\Installers\QuickEndpoint_ApiExample.runtimeconfig.json
+E:\source_code\QuickEndpoint\Installers\QuickEndpoint_ApiExample.pdb
+E:\source_code\QuickEndpoint\Installers\Microsoft.AspNetCore.JsonPatch.dll
+E:\source_code\QuickEndpoint\Installers\Microsoft.OpenApi.dll
+E:\source_code\QuickEndpoint\Installers\Newtonsoft.Json.dll
+E:\source_code\QuickEndpoint\Installers\Swashbuckle.AspNetCore.Swagger.dll
+E:\source_code\QuickEndpoint\Installers\Swashbuckle.AspNetCore.SwaggerGen.dll
+E:\source_code\QuickEndpoint\Installers\Swashbuckle.AspNetCore.SwaggerUI.dll

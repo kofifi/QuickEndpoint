@@ -1,0 +1,15 @@
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\bin\Debug\net8.0\QuickEndpoint_MainApp.exe
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\bin\Debug\net8.0\QuickEndpoint_MainApp.deps.json
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\bin\Debug\net8.0\QuickEndpoint_MainApp.runtimeconfig.json
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\bin\Debug\net8.0\QuickEndpoint_MainApp.dll
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\bin\Debug\net8.0\QuickEndpoint_MainApp.pdb
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\QuickEndpoint_MainApp.GeneratedMSBuildEditorConfig.editorconfig
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\QuickEndpoint_MainApp.AssemblyInfoInputs.cache
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\QuickEndpoint_MainApp.AssemblyInfo.cs
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\QuickEndpoint_MainApp.csproj.CoreCompileInputs.cache
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\QuickEndpoint_MainApp.sourcelink.json
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\QuickEndpoint_MainApp.dll
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\refint\QuickEndpoint_MainApp.dll
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\QuickEndpoint_MainApp.pdb
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\QuickEndpoint_MainApp.genruntimeconfig.cache
+E:\source_code\QuickEndpoint\QuickEndpoint_MainApp\obj\Debug\net8.0\ref\QuickEndpoint_MainApp.dll

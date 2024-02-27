@@ -1,12 +1,15 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Installers",
-    "\\QuickEndpoint_MainApplication",
-    "\\QuickEndpoint_PublisherExample",
+    "\\QuickEndpoint_CreateApi\\bin\\Debug",
+    "\\QuickEndpoint_CreateApi\\bin\\Debug\\net8.0",
+    "\\QuickEndpoint_CreateApi\\bin\\Release",
+    "\\QuickEndpoint_CreateApi\\obj\\Debug\\net8.0",
+    "\\QuickEndpoint_MainApp",
+    "\\QuickEndpoint_MainApp\\Modules",
     "\\Tools\\nssm-2.24",
     "\\Tools\\nssm-2.24\\win64"
   ],
-  "SelectedNode": "\\Installers\\QuickEndpoint_ApiExample_Final.tar.gz",
+  "SelectedNode": "\\Tools",
   "PreviewInSolutionExplorer": false
 }
