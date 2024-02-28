@@ -1,15 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\QuickEndpoint_CreateApi\\bin\\Debug",
-    "\\QuickEndpoint_CreateApi\\bin\\Debug\\net8.0",
-    "\\QuickEndpoint_CreateApi\\bin\\Release",
-    "\\QuickEndpoint_CreateApi\\obj\\Debug\\net8.0",
-    "\\QuickEndpoint_MainApp",
-    "\\QuickEndpoint_MainApp\\Modules",
-    "\\Tools\\nssm-2.24",
-    "\\Tools\\nssm-2.24\\win64"
+    "\\QuickEndpoint_Gui\\ViewModels",
+    "\\QuickEndpoint_Gui\\Views"
   ],
-  "SelectedNode": "\\Tools",
+  "SelectedNode": "\\QuickEndpoint_Gui",
   "PreviewInSolutionExplorer": false
 }
