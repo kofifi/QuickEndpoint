@@ -3,24 +3,20 @@
   "WorkspaceRootPath": "E:\\source_code\\QuickEndpoint\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|e:\\source_code\\quickendpoint\\quickendpoint_gui\\views\\mainview.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}",
-      "RelativeMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|solutionrelative:quickendpoint_gui\\views\\mainview.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|e:\\source_code\\quickendpoint\\quickendpoint_gui\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|solutionrelative:quickendpoint_gui\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|e:\\source_code\\quickendpoint\\quickendpoint_gui\\app.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}",
+      "RelativeMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|solutionrelative:quickendpoint_gui\\app.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|e:\\source_code\\quickendpoint\\quickendpoint_gui\\views\\mainwindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}",
       "RelativeMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|solutionrelative:quickendpoint_gui\\views\\mainwindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|e:\\source_code\\quickendpoint\\quickendpoint_gui\\app.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}",
-      "RelativeMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|solutionrelative:quickendpoint_gui\\app.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}"
+      "AbsoluteMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|e:\\source_code\\quickendpoint\\quickendpoint_gui\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|solutionrelative:quickendpoint_gui\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|e:\\source_code\\quickendpoint\\quickendpoint_gui\\app.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|solutionrelative:quickendpoint_gui\\app.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|e:\\source_code\\quickendpoint\\quickendpoint_gui\\views\\mainview.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}",
+      "RelativeMoniker": "D:0:0:{5FB76D53-CA1E-4F7C-B1D6-C49A3C97E61F}|QuickEndpoint_Gui\\QuickEndpoint_Gui.csproj|solutionrelative:quickendpoint_gui\\views\\mainview.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,68 +26,55 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "App.axaml.cs",
-              "DocumentMoniker": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\App.axaml.cs",
-              "RelativeDocumentMoniker": "QuickEndpoint_Gui\\App.axaml.cs",
-              "ToolTip": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\App.axaml.cs",
-              "RelativeToolTip": "QuickEndpoint_Gui\\App.axaml.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAACQAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-28T19:45:28.903Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "MainViewModel.cs",
-              "DocumentMoniker": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\ViewModels\\MainViewModel.cs",
-              "RelativeDocumentMoniker": "QuickEndpoint_Gui\\ViewModels\\MainViewModel.cs",
-              "ToolTip": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\ViewModels\\MainViewModel.cs",
-              "RelativeToolTip": "QuickEndpoint_Gui\\ViewModels\\MainViewModel.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAMAAAABAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-28T19:42:48.781Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "MainWindow.axaml",
-              "DocumentMoniker": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\Views\\MainWindow.axaml",
-              "RelativeDocumentMoniker": "QuickEndpoint_Gui\\Views\\MainWindow.axaml",
-              "ToolTip": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\Views\\MainWindow.axaml",
-              "RelativeToolTip": "QuickEndpoint_Gui\\Views\\MainWindow.axaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-02-28T19:36:46.42Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "App.axaml",
-              "DocumentMoniker": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\App.axaml",
-              "RelativeDocumentMoniker": "QuickEndpoint_Gui\\App.axaml",
-              "ToolTip": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\App.axaml",
-              "RelativeToolTip": "QuickEndpoint_Gui\\App.axaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-02-28T19:23:26.653Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
               "Title": "MainView.axaml",
               "DocumentMoniker": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\Views\\MainView.axaml",
               "RelativeDocumentMoniker": "QuickEndpoint_Gui\\Views\\MainView.axaml",
               "ToolTip": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\Views\\MainView.axaml",
               "RelativeToolTip": "QuickEndpoint_Gui\\Views\\MainView.axaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-02-28T19:22:53.384Z",
+              "WhenOpened": "2024-02-29T21:36:19.665Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "App.axaml",
+              "DocumentMoniker": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\App.axaml",
+              "RelativeDocumentMoniker": "QuickEndpoint_Gui\\App.axaml",
+              "ToolTip": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\App.axaml",
+              "RelativeToolTip": "QuickEndpoint_Gui\\App.axaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2024-02-29T21:06:39.951Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MainWindow.axaml",
+              "DocumentMoniker": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\Views\\MainWindow.axaml",
+              "RelativeDocumentMoniker": "QuickEndpoint_Gui\\Views\\MainWindow.axaml",
+              "ToolTip": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\Views\\MainWindow.axaml",
+              "RelativeToolTip": "QuickEndpoint_Gui\\Views\\MainWindow.axaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2024-02-29T20:34:33.914Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MainViewModel.cs",
+              "DocumentMoniker": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\ViewModels\\MainViewModel.cs",
+              "RelativeDocumentMoniker": "QuickEndpoint_Gui\\ViewModels\\MainViewModel.cs",
+              "ToolTip": "E:\\source_code\\QuickEndpoint\\QuickEndpoint_Gui\\ViewModels\\MainViewModel.cs",
+              "RelativeToolTip": "QuickEndpoint_Gui\\ViewModels\\MainViewModel.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-28T19:42:48.781Z",
               "EditorCaption": ""
             }
           ]
