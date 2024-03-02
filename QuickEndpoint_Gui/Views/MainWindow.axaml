@@ -6,8 +6,9 @@
         xmlns:views="clr-namespace:QuickEndpoint_Gui.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="QuickEndpoint_Gui.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/logo.ico"
         Title="QuickEndpoint">
 	<views:MainView />
-
+	
+	
 </Window>

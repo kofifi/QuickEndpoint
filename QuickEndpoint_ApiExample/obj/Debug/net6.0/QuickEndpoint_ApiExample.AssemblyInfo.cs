@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("QuickEndpoint_ApiExample")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1664739c363c9f29896cffbe461a082328bc705c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e93793864d44e5279bc03b8db2c65dcba3d42db")]
 [assembly: System.Reflection.AssemblyProductAttribute("QuickEndpoint_ApiExample")]
 [assembly: System.Reflection.AssemblyTitleAttribute("QuickEndpoint_ApiExample")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

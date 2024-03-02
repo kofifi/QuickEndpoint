@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("QuickEndpoint_ApiExample")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2c16a5b1931a00e7108ebb7d43a0402db2c9101d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e93793864d44e5279bc03b8db2c65dcba3d42db")]
 [assembly: System.Reflection.AssemblyProductAttribute("QuickEndpoint_ApiExample")]
 [assembly: System.Reflection.AssemblyTitleAttribute("QuickEndpoint_ApiExample")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
