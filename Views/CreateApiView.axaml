@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             xmlns:c="clr-namespace:QuickEndpoint.Converters"
+             x:Class="QuickEndpoint.Views.CreateApiView"
+             x:CompileBindings="True">
+
+  <UserControl.DataContext>
+    <vm:CreateApiViewModel/>
+  </UserControl.DataContext>
+
+<UserControl.Resources>
+  <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+</UserControl.Resources>
+
+<UserControl.Styles>
+            <Style Selector="TextBlock.H1">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+            <Style Selector="TextBlock.H2">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+</UserControl.Styles>
+
+
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/> <!-- Label for Name -->
+      <RowDefinition Height="Auto"/> <!-- TextBox for Name -->
+      <RowDefinition Height="Auto"/> <!-- Label for Description -->
+      <RowDefinition Height="*"/>   <!-- TextBox for Description -->
+      <RowDefinition Height="Auto"/> <!-- Button Row -->
+      <RowDefinition Height="Auto"/> <!-- Progressbar Row -->
+      <RowDefinition Height="Auto"/> <!-- Error Row -->
+    </Grid.RowDefinitions>
+
+    <!-- Label for the Name TextBox -->
+    <TextBlock Grid.Row="0" Classes="H1" Text="Name" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+    <!-- Name TextBox -->
+    <TextBox Grid.Row="1"
+             Margin="0 5"
+             Text="{Binding NameOfApi, Mode=TwoWay}"
+             x:DataType="vm:CreateApiViewModel"
+             Classes="H1"
+             Width="250"/>
+
+    <!-- Label for the Description TextBox -->
+    <TextBlock Grid.Row="2" Classes="H1" Text="Description" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+    <!-- Description TextBox -->
+    <TextBox Grid.Row="3"
+            Margin="0 5"
+            Text="{Binding DescriptionOfApi, Mode=TwoWay}"
+            x:DataType="vm:CreateApiViewModel"
+            Classes="H1"
+            Width="250"/>
+
+    <!-- Create API Button -->
+    <Button Grid.Row="4" HorizontalAlignment="Center"
+            Margin="0,20,0,0"
+            Command="{Binding CreateApiCommand}"
+            x:DataType="vm:CreateApiViewModel"
+            Content="Create API"
+            Classes="H1"
+            Width="250"/>
+
+    <ProgressBar Grid.Row="5"
+                 IsVisible="{Binding IsCreatingApi}"
+                 x:DataType="vm:CreateApiViewModel"
+                 Value="{Binding CreateApiProgress, Mode=OneWay}"
+                 Height="20"
+                 Maximum="1"
+                 Margin="0,25,0,0"/>
+
+    <TextBlock Grid.Row="6" 
+               Grid.Column="0" 
+               Grid.ColumnSpan="2"
+               Text="{Binding ErrorMessage, Mode=OneWay}" 
+               x:DataType="vm:CreateApiViewModel"
+               TextWrapping="Wrap" 
+               Foreground="Red" 
+               HorizontalAlignment="Center" 
+               VerticalAlignment="Top"
+               Margin="10"/>
+
+
+
+  </Grid>
+</UserControl>

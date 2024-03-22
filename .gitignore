@@ -452,3 +452,9 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+## Project-specific files to ignore
+*/Data/CreatedApis/
+*/Data/PublishedApis/
+*/debug.log
+*/combined_output.txt

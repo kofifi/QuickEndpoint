@@ -1,0 +1,1066 @@
+CreateApiViewModel.cs
+
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+using ReactiveUI;
+using System.Reactive;
+
+namespace QuickEndpoint.ViewModels
+{
+    public class CreateApiViewModel : ViewModelBase
+    {
+
+        private bool _isCreatingApi;
+        public bool IsCreatingApi
+        {
+            get => _isCreatingApi;
+            set => this.RaiseAndSetIfChanged(ref _isCreatingApi, value);
+        }
+
+        private string _errorMessage;
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
+        }
+
+        private double _createApiProgress;
+        public double CreateApiProgress
+        {
+            get => _createApiProgress;
+            set => this.RaiseAndSetIfChanged(ref _createApiProgress, value);
+        }
+
+        private string _apiName;
+        public string ApiName
+        {
+            get => _apiName;
+            set => this.RaiseAndSetIfChanged(ref _apiName, value);
+        }
+
+        private string _nameOfApi;
+        public string NameOfApi
+        {
+            get => _nameOfApi;
+            set => this.RaiseAndSetIfChanged(ref _nameOfApi, value);
+        }
+
+        private string _descriptionOfApi;
+        public string DescriptionOfApi
+        {
+            get => _descriptionOfApi;
+            set => this.RaiseAndSetIfChanged(ref _descriptionOfApi, value);
+        }
+
+        // Command property
+        public ReactiveCommand<Unit, Unit> CreateApiCommand { get; }
+
+        public CreateApiViewModel()
+        {
+            // Initialize the command with a method to call
+            CreateApiCommand = ReactiveCommand.CreateFromTask(CreateApiAsync);
+
+            // Other initializations...
+        }
+
+private async Task CreateApiAsync()
+{
+    IsCreatingApi = true;
+    CreateApiProgress = 0.0; // Start progress at 0%
+    LogDebugInfo("CreateApi method execution started.");
+
+    try
+    {
+        // Simulate initial setup work
+        await Task.Delay(500); // Simulate some initial work
+        CreateApiProgress = 0.1; // Update progress to 10%
+        LogDebugInfo("Initial setup completed.");
+
+        // Directory and project setup
+        string baseDirectory = Environment.CurrentDirectory;
+        string apisDirectory = Path.Combine(baseDirectory, "Data", "CreatedApis");
+        if (!Directory.Exists(apisDirectory))
+        {
+            Directory.CreateDirectory(apisDirectory);
+        }
+        string projectDirectory = Path.Combine(apisDirectory, NameOfApi);
+        if (Directory.Exists(projectDirectory))
+        {
+            ErrorMessage = "API with this name already exists.";
+            return; // Wyjdź z metody, nie kontynuując tworzenia API
+        }
+        else
+        {
+            ErrorMessage = ""; // Wyczyść komunikat o błędzie, jeśli katalog nie istnieje
+        }
+        Directory.CreateDirectory(projectDirectory);
+        LogDebugInfo("Project directory setup completed.");
+        await Task.Delay(500); // Simulate time taken for directory setup
+        CreateApiProgress = 0.3; // Update progress to 30%
+
+        // Process start and execution
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            Arguments = "new webapp",
+            WorkingDirectory = projectDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using (var process = new Process { StartInfo = startInfo })
+        {
+            process.Start();
+            LogDebugInfo("dotnet process started.");
+            while (!process.HasExited)
+            {
+                await Task.Delay(1000); // Wait a bit before updating the progress
+                CreateApiProgress = Math.Min(CreateApiProgress + 0.2, 0.9); // Ensure progress does not exceed 90%
+            }
+            string output = await process.StandardOutput.ReadToEndAsync();
+            string error = await process.StandardError.ReadToEndAsync();
+            if (!string.IsNullOrEmpty(output))
+            {
+                File.WriteAllText(Path.Combine(projectDirectory, "api_creation_output.txt"), output);
+            }
+            if (!string.IsNullOrEmpty(error))
+            {
+                LogDebugInfo($"dotnet process error: {error}");
+            }
+        }
+
+        await Task.Delay(500); // Finalize everything
+        CreateApiProgress = 1.0; // Ensure progress is set to 100% after completion
+        await Task.Delay(500); // Finalize everything
+        LogDebugInfo("API creation process completed.");
+    }
+    catch (Exception ex)
+    {
+        LogDebugInfo($"An error occurred: {ex.Message}");
+    }
+    finally
+    {
+        IsCreatingApi = false;
+    }
+}
+
+        private void LogDebugInfo(string message)
+        {
+            // Append the timestamp to every log entry for better tracking
+            string logEntry = $"{DateTime.Now}: {message}\n";
+            File.AppendAllText("debug.log", logEntry);
+        }
+    }
+}
+
+DashboardViewModel.cs
+
+using ReactiveUI;
+using System;
+
+namespace QuickEndpoint.ViewModels
+{
+    public class DashboardViewModel : ViewModelBase
+    {
+        private string _apiName;
+        public string ApiName
+        {
+            get => _apiName;
+            set => this.RaiseAndSetIfChanged(ref _apiName, value);
+        }
+
+        public override string Greeting => "Hello from DashboardViewModel";
+
+    }
+}
+
+
+EditApiViewModel.cs
+
+using ReactiveUI;
+using System;
+using System.IO;
+using System.Linq;
+using System.Reactive;
+using Avalonia.Collections;
+
+namespace QuickEndpoint.ViewModels
+{
+public class EditApiViewModel : ViewModelBase
+{
+    private string _apiName;
+    private AvaloniaList<string> _availableApis = new AvaloniaList<string>();
+    public ReactiveCommand<Unit, Unit> EditApiCommand { get; }
+    public ReactiveCommand<Unit, Unit> RefreshApiListCommand { get; }
+
+    public string ApiName
+    {
+        get => _apiName;
+        set => this.RaiseAndSetIfChanged(ref _apiName, value);
+    }
+
+    public AvaloniaList<string> AvailableApis
+    {
+        get => _availableApis;
+        set => this.RaiseAndSetIfChanged(ref _availableApis, value);
+    }
+
+        public EditApiViewModel()
+        {
+            EditApiCommand = ReactiveCommand.Create(EditApi);
+            RefreshApiListCommand = ReactiveCommand.Create(RefreshAvailableApis);
+
+            // Initial refresh to populate available APIs.
+            RefreshAvailableApis(); 
+        }
+
+        private void EditApi()
+        {
+            // Logic for editing the selected API goes here.
+        }
+
+        public void RefreshAvailableApis()
+        {
+            try
+            {
+                LogDebugInfo("Starting to refresh available APIs...");
+
+                string apisDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Data", "CreatedApis");
+                LogDebugInfo($"Looking for APIs in directory: {apisDirectory}");
+
+                if (Directory.Exists(apisDirectory))
+                {
+                    var apiDirectories = Directory.GetDirectories(apisDirectory).Select(Path.GetFileName).ToList();
+                    
+                    LogDebugInfo($"Found {apiDirectories.Count} API directories.");
+                    
+                    AvailableApis.Clear();
+                    foreach (var dir in apiDirectories)
+                    {
+                        AvailableApis.Add(dir);
+                        LogDebugInfo($"Added API directory to list: {dir}");
+                    }
+                }
+                else
+                {
+                    LogDebugInfo("APIs directory does not exist.");
+                }
+
+                LogDebugInfo("Finished refreshing available APIs.");
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"An error occurred while refreshing available APIs: {ex.Message}");
+            }
+        }
+
+        private void LogDebugInfo(string message)
+        {
+            // Ensure the debug log file path is correct and accessible.
+            string logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "debug.log");
+
+            // Append the timestamp to every log entry for better tracking.
+            string logEntry = $"{DateTime.Now}: {message}\n";
+            File.AppendAllText(logFilePath, logEntry);
+        }
+    }
+}
+
+
+MainWindowViewModel.cs
+
+﻿using System;
+using ReactiveUI;
+using System.Reactive;
+
+namespace QuickEndpoint.ViewModels  
+{
+    public class MainWindowViewModel : ReactiveObject
+    {
+        public ReactiveCommand<Unit, Unit> CreateApiCommand { get; }
+        public ReactiveCommand<Unit, Unit> EditApiCommand { get; }
+        public ReactiveCommand<Unit, Unit> PublishApiCommand { get; }
+        public ReactiveCommand<Unit, Unit> OpenSettingsCommand { get; }
+
+        private ViewModelBase _currentViewModel;
+        public ViewModelBase CurrentViewModel
+        {
+            get => _currentViewModel;
+            set => this.RaiseAndSetIfChanged(ref _currentViewModel, value);
+        }
+
+        public MainWindowViewModel()
+        {
+            CreateApiCommand = ReactiveCommand.Create(() => ExecuteCreateApi());
+            EditApiCommand = ReactiveCommand.Create(() => ExecuteEditApi());
+            PublishApiCommand = ReactiveCommand.Create(() => ExecutePublishApi());
+            OpenSettingsCommand = ReactiveCommand.Create(() => ExecuteOpenSettings());
+
+            // Ustawienie początkowego ViewModelu
+            CurrentViewModel = new DashboardViewModel();
+        }
+
+        private void ExecuteCreateApi()
+        {
+            CurrentViewModel = new CreateApiViewModel();
+        }
+
+        private void ExecuteEditApi()
+        {
+            CurrentViewModel = new EditApiViewModel();
+        }
+
+        private void ExecutePublishApi()
+        {
+            CurrentViewModel = new PublishApiViewModel();
+        }
+
+        private void ExecuteOpenSettings()
+        {
+            CurrentViewModel = new OpenSettingsViewModel();
+        }
+    }
+}
+
+
+OpenSettingsViewModel.cs
+
+using ReactiveUI;
+
+namespace QuickEndpoint.ViewModels
+{
+    public class OpenSettingsViewModel : ViewModelBase
+    {
+        private string _apiName;
+        public string ApiName
+        {
+            get => _apiName;
+            set => this.RaiseAndSetIfChanged(ref _apiName, value);
+        }
+
+        public override string Greeting => "Hello from OpenSettingsViewModel";
+    }
+}
+
+
+PublishApiViewModel.cs
+
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reactive;
+using Avalonia.Collections;
+using ReactiveUI;
+using QuickEndpoint_MainApp.Modules;
+
+namespace QuickEndpoint.ViewModels
+{
+    public class PublishApiViewModel : ViewModelBase
+    {
+        private string _apiName;
+        private AvaloniaList<string> _availableApis = new AvaloniaList<string>();
+        public ReactiveCommand<Unit, Unit> PublishApiCommand { get; }
+        public ReactiveCommand<Unit, Unit> RefreshApiListCommand { get; }
+
+        public string ApiName
+        {
+            get => _apiName;
+            set => this.RaiseAndSetIfChanged(ref _apiName, value);
+        }
+
+        public AvaloniaList<string> AvailableApis
+        {
+            get => _availableApis;
+            set => this.RaiseAndSetIfChanged(ref _availableApis, value);
+        }
+
+        public PublishApiViewModel()
+        {
+            PublishApiCommand = ReactiveCommand.Create(PublishApi);
+            RefreshApiListCommand = ReactiveCommand.Create(RefreshAvailableApis);
+
+            // Initial refresh to populate available APIs.
+            RefreshAvailableApis();
+        }
+
+            private void PublishApi()
+    {
+        if (string.IsNullOrEmpty(ApiName))
+        {
+            Console.WriteLine("No API selected for publishing.");
+            return;
+        }
+
+        try
+        {
+            string baseDirectory = Environment.CurrentDirectory;
+            // Adjust to use Data\Installers directory
+            string installersDir = Path.Combine(baseDirectory, "Data", "Installers", ApiName);
+
+            // Ensure the directory exists
+            Directory.CreateDirectory(installersDir);
+
+            // Example of determining the entry point dynamically. Adjust as needed.
+            string entryPoint = $"{ApiName}.exe"; // Assuming an executable named after the API
+            string nssmExecutablePath = "path\\to\\nssm.exe"; // Adjust according to your environment
+
+            // Generate the installer and uninstaller scripts
+            InstallerScriptGenerator.GenerateScript(ApiName, entryPoint, installersDir, nssmExecutablePath);
+            InstallerScriptGenerator.GenerateUninstallScript(ApiName, installersDir, ApiName); 
+
+            Console.WriteLine($"Installer and uninstaller scripts for '{ApiName}' have been generated in {installersDir}.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred while publishing API '{ApiName}': {ex.Message}");
+        }
+    }
+
+
+        public void RefreshAvailableApis()
+        {
+            try
+            {
+                string apisDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Data", "CreatedApis");
+                if (Directory.Exists(apisDirectory))
+                {
+                    var apiDirectories = Directory.GetDirectories(apisDirectory).Select(Path.GetFileName).ToList();
+                    AvailableApis.Clear();
+                    AvailableApis.AddRange(apiDirectories);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while refreshing available APIs: {ex.Message}");
+            }
+        }
+    }
+}
+
+namespace QuickEndpoint_MainApp.Modules
+{
+    public static class ApplicationPublisher
+    {
+        public static void PublishApplication(string projectDir, string publishDir, string configuration)
+        {
+            Utilities.ExecuteProcess("dotnet", $"publish \"{projectDir}\" -c {configuration} -o \"{publishDir}\"");
+            Console.WriteLine($"The application has been published to {publishDir}");
+        }
+    }
+
+    public static class InstallerScriptGenerator
+    {
+        public static void GenerateScript(string appName, string entryPoint, string installersDir, string nssmExecutablePath)
+        {
+            // PowerShell script template with parameters for customization omitted for brevity
+            string scriptTemplate = @$"
+param(
+    [string]$ServiceName = '{appName}',
+    [string]$EntryPoint = '{entryPoint}'
+)
+
+$serviceName = $ServiceName
+$serviceDisplayName = $ServiceName
+$appDirectory = '{installersDir}'  # Application directory
+$nssmPath = '{nssmExecutablePath}'
+
+# Function for logging messages
+function Log-Message {{
+    param(
+        [string]$Message,
+        [string]$Level = 'Info'
+    )
+    $timeStamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    Write-Output ""[$timeStamp][$Level] $Message""
+}}
+
+# Ensure the application directory exists
+Log-Message 'Ensuring the application directory exists...'
+if (-Not (Test-Path $appDirectory)) {{
+    New-Item -ItemType Directory -Path $appDirectory
+    Log-Message 'Application directory created.'
+}}
+
+$exePath = Join-Path $appDirectory $EntryPoint
+
+# Check if the service already exists with NSSM and remove it if necessary
+Log-Message 'Checking if the service already exists...'
+$status = & $nssmPath status $serviceName
+if ($status -ne 'SERVICE_NOT_FOUND') {{
+    Log-Message 'Service already exists. Removing existing service...'
+    & $nssmPath stop $serviceName
+    & $nssmPath remove $serviceName confirm
+}}
+
+# Use NSSM to install the service
+Log-Message 'Installing service with NSSM...'
+& $nssmPath install $serviceName `""$exePath`""
+
+# Set service description with NSSM (optional)
+& $nssmPath set $serviceName Description `""$serviceDisplayName`""
+
+# Attempt to start the service with NSSM
+try {{
+    & $nssmPath start $serviceName
+    Log-Message '$serviceName service installed and started with NSSM.'
+}} catch {{
+    Log-Message 'Failed to start the service. Please check the service configuration.'
+}}
+";
+
+            string scriptPath = Path.Combine(installersDir, $"{appName}_install.ps1");
+            File.WriteAllText(scriptPath, scriptTemplate);
+            Console.WriteLine($"Installer script has been saved at: {scriptPath}");
+        }
+
+        public static void GenerateUninstallScript(string appName, string uninstallersDir, string serviceName)
+        {
+            // PowerShell script template for uninstallation omitted for brevity
+            string uninstallScriptTemplate = @"
+param(
+    [string]$ServiceName = '{serviceName}'
+)
+
+# Use sc.exe to stop and then delete the service
+& sc.exe stop $ServiceName
+& sc.exe delete $ServiceName
+";
+            string uninstallScriptPath = Path.Combine(uninstallersDir, $"{appName}_uninstall.ps1");
+            File.WriteAllText(uninstallScriptPath, uninstallScriptTemplate);
+            Console.WriteLine($"Uninstaller script has been saved at: {uninstallScriptPath}");
+        }
+    }
+
+    public static class Utilities
+    {
+        public static string GetProjectBaseDirectory()
+        {
+            var currentDir = Directory.GetCurrentDirectory();
+            return Directory.GetParent(currentDir)?.FullName ?? throw new InvalidOperationException("Cannot find the parent directory.");
+        }
+
+        public static void EnsureDirectoryExists(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
+
+        public static void ExecuteProcess(string fileName, string arguments)
+        {
+            using var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                RedirectStandardOutput = true,
+                UseShellExecute = false
+            });
+            process.WaitForExit();
+
+            var output = process.StandardOutput.ReadToEnd();
+            if (!string.IsNullOrEmpty(output))
+            {
+                Console.WriteLine(output);
+            }
+
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"Process exited with code: {process.ExitCode}. Error: {output}");
+            }
+        }
+    }
+}
+
+
+ViewModelBase.cs
+
+﻿using ReactiveUI;
+
+namespace QuickEndpoint.ViewModels;
+
+public class ViewModelBase : ReactiveObject
+{
+    public virtual string Greeting => "Hello from Base ViewModel";
+}
+
+
+CreateApiView.axaml
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             xmlns:c="clr-namespace:QuickEndpoint.Converters"
+             x:Class="QuickEndpoint.Views.CreateApiView"
+             x:CompileBindings="True">
+
+  <UserControl.DataContext>
+    <vm:CreateApiViewModel/>
+  </UserControl.DataContext>
+
+<UserControl.Resources>
+  <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+</UserControl.Resources>
+
+<UserControl.Styles>
+            <Style Selector="TextBlock.H1">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+            <Style Selector="TextBlock.H2">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+</UserControl.Styles>
+
+
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/> <!-- Label for Name -->
+      <RowDefinition Height="Auto"/> <!-- TextBox for Name -->
+      <RowDefinition Height="Auto"/> <!-- Label for Description -->
+      <RowDefinition Height="*"/>   <!-- TextBox for Description -->
+      <RowDefinition Height="Auto"/> <!-- Button Row -->
+      <RowDefinition Height="Auto"/> <!-- Progressbar Row -->
+      <RowDefinition Height="Auto"/> <!-- Error Row -->
+    </Grid.RowDefinitions>
+
+    <!-- Label for the Name TextBox -->
+    <TextBlock Grid.Row="0" Classes="H1" Text="Name" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+    <!-- Name TextBox -->
+    <TextBox Grid.Row="1"
+             Margin="0 5"
+             Text="{Binding NameOfApi, Mode=TwoWay}"
+             x:DataType="vm:CreateApiViewModel"
+             Classes="H1"
+             Width="250"/>
+
+    <!-- Label for the Description TextBox -->
+    <TextBlock Grid.Row="2" Classes="H1" Text="Description" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+    <!-- Description TextBox -->
+    <TextBox Grid.Row="3"
+            Margin="0 5"
+            Text="{Binding DescriptionOfApi, Mode=TwoWay}"
+            x:DataType="vm:CreateApiViewModel"
+            Classes="H1"
+            Width="250"/>
+
+    <!-- Create API Button -->
+    <Button Grid.Row="4" HorizontalAlignment="Center"
+            Margin="0,20,0,0"
+            Command="{Binding CreateApiCommand}"
+            x:DataType="vm:CreateApiViewModel"
+            Content="Create API"
+            Classes="H1"
+            Width="250"/>
+
+    <ProgressBar Grid.Row="5"
+                 IsVisible="{Binding IsCreatingApi}"
+                 x:DataType="vm:CreateApiViewModel"
+                 Value="{Binding CreateApiProgress, Mode=OneWay}"
+                 Height="20"
+                 Maximum="1"
+                 Margin="0,25,0,0"/>
+
+    <TextBlock Grid.Row="6" 
+               Grid.Column="0" 
+               Grid.ColumnSpan="2"
+               Text="{Binding ErrorMessage, Mode=OneWay}" 
+               x:DataType="vm:CreateApiViewModel"
+               TextWrapping="Wrap" 
+               Foreground="Red" 
+               HorizontalAlignment="Center" 
+               VerticalAlignment="Top"
+               Margin="10"/>
+
+
+
+  </Grid>
+</UserControl>
+
+
+CreateApiView.axaml.cs
+
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using QuickEndpoint.ViewModels;
+
+namespace QuickEndpoint.Views
+{
+    public partial class CreateApiView : UserControl
+    {
+        public CreateApiView()
+        {
+            InitializeComponent();
+            DataContext = new CreateApiViewModel();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+    }
+}
+
+
+DashboardView.axaml
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QuickEndpoint.Views.DashboardView">
+    
+
+        <UserControl.Styles>
+            <Style Selector="TextBlock.H1">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+            <Style Selector="TextBlock.H2">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+        </UserControl.Styles>
+    
+        <StackPanel>
+          <TextBlock Classes="H1">Welcome to the QuickEndpoint</TextBlock>
+          <TextBlock Classes="H2" Text="Start creating your own API!"/>
+        </StackPanel>
+        
+</UserControl>
+
+
+DashboardView.axaml.cs
+
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using QuickEndpoint.ViewModels;
+
+namespace QuickEndpoint.Views
+{
+    public partial class DashboardView : UserControl
+    {
+        public DashboardView()
+        {
+            InitializeComponent();
+            DataContext = new DashboardViewModel();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+    }
+}
+
+
+EditApiView.axaml
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QuickEndpoint.Views.EditApiView"
+             xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             x:CompileBindings="True">
+    
+    <UserControl.DataContext>
+        <vm:EditApiViewModel/>
+    </UserControl.DataContext>
+
+    <UserControl.Styles>
+            <Style Selector="TextBlock.H1">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+            <Style Selector="TextBlock.H2">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Tytuł "Edit API" -->
+            <RowDefinition Height="Auto"/> <!-- ComboBox -->
+            <RowDefinition Height="Auto"/> <!-- Przycisk odświeżania -->
+            <RowDefinition Height="Auto"/> <!-- Przycisk edycji -->
+        </Grid.RowDefinitions>
+
+        <!-- Tytuł "Edit API" -->
+        <TextBlock Grid.Row="0"
+                   Classes="H1"  
+                   Text="Edit API"
+                   Margin="10"
+                   FontSize="20"
+                   HorizontalAlignment="Center"/>
+
+        <!-- ComboBox -->
+        <ComboBox Grid.Row="1"
+                Name="Select"
+                Margin="10"
+                HorizontalAlignment="Center"
+                ItemsSource="{Binding AvailableApis}"
+                x:DataType="vm:EditApiViewModel"
+                SelectedItem="{Binding ApiName}"
+                Width="290"
+                Classes="H1">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Content="Edit Selected API"
+                    Classes="H2"
+                    x:DataType="vm:EditApiViewModel"
+                    Command="{Binding EditApiCommand}"
+                    Margin="10"/>
+            <Button Content="Refresh API List"
+                    Classes="H2"
+                    x:DataType="vm:EditApiViewModel"
+                    Command="{Binding RefreshApiListCommand}"
+                    Margin="10"/>
+        </StackPanel>
+
+    </Grid>
+</UserControl>
+
+
+EditApiView.axaml.cs
+
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using QuickEndpoint.ViewModels;
+
+namespace QuickEndpoint.Views
+{
+    public partial class EditApiView : UserControl
+    {
+        public EditApiView()
+        {
+            InitializeComponent();
+            DataContext = new EditApiViewModel();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+    }
+}
+
+
+MainWindow.axaml
+
+<Window xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+       xmlns:v="clr-namespace:QuickEndpoint.Views"
+       x:Class="QuickEndpoint.Views.MainWindow"
+       Icon="/Assets/avalonia-logo.ico"
+       Title="QuickEndpoint"
+       x:CompileBindings="True"
+       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+       d:DesignWidth="800" d:DesignHeight="450">
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <DockPanel>
+    <Menu DockPanel.Dock="Bottom">
+      <MenuItem Header="API">
+        <MenuItem Header="Create API" Command="{Binding CreateApiCommand}" x:DataType="vm:MainWindowViewModel"/>
+        <MenuItem Header="Edit API" Command="{Binding EditApiCommand}" x:DataType="vm:MainWindowViewModel"/>
+        <MenuItem Header="Publish API" Command="{Binding PublishApiCommand}" x:DataType="vm:MainWindowViewModel"/>
+      </MenuItem>
+      <MenuItem Header="Settings" Command="{Binding OpenSettingsCommand}" x:DataType="vm:MainWindowViewModel"/>
+    </Menu>
+
+    <Grid DockPanel.Dock="Right" HorizontalAlignment="Center" VerticalAlignment="Center">
+      <ContentControl Content="{Binding CurrentViewModel}" x:DataType="vm:MainWindowViewModel">
+
+      </ContentControl>
+    </Grid>
+  </DockPanel>
+
+</Window>
+
+
+MainWindow.axaml.cs
+
+using Avalonia.Controls;
+using Avalonia;
+using Avalonia.Markup.Xaml;
+using QuickEndpoint.ViewModels;
+
+namespace QuickEndpoint.Views
+{
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+            DataContext = new MainWindowViewModel();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+            this.AttachDevTools();  // Call AttachDevTools here
+        }
+    }
+}
+
+
+OpenSettingsView.axaml
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QuickEndpoint.Views.OpenSettingsView">
+    <!-- UI definition here -->
+</UserControl>
+
+
+OpenSettingsView.axaml.cs
+
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using QuickEndpoint.ViewModels;
+
+namespace QuickEndpoint.Views
+{
+    public partial class OpenSettingsView : Window
+    {
+        public OpenSettingsView()
+        {
+            InitializeComponent();
+            DataContext = new OpenSettingsViewModel();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+    }
+}
+
+
+PublishApiView.axaml
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QuickEndpoint.Views.PublishApiView"
+             xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             x:CompileBindings="True">
+
+    <UserControl.DataContext>
+        <vm:PublishApiViewModel/>
+    </UserControl.DataContext>
+
+    <UserControl.Styles>
+            <Style Selector="TextBlock.H1">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+            <Style Selector="TextBlock.H2">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+            </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Tytuł "Edit API" -->
+            <RowDefinition Height="Auto"/> <!-- ComboBox -->
+            <RowDefinition Height="Auto"/> <!-- Przycisk odświeżania -->
+            <RowDefinition Height="Auto"/> <!-- Przycisk edycji -->
+        </Grid.RowDefinitions>
+
+        <!-- Tytuł "Edit API" -->
+        <TextBlock Grid.Row="0"
+                   Classes="H1"  
+                   Text="Publish API"
+                   Margin="10"
+                   FontSize="20"
+                   HorizontalAlignment="Center"/>
+
+        <!-- ComboBox -->
+        <ComboBox Grid.Row="1"
+                Name="Select"
+                Margin="10"
+                HorizontalAlignment="Center"
+                ItemsSource="{Binding AvailableApis}"
+                x:DataType="vm:PublishApiViewModel"
+                SelectedItem="{Binding ApiName}"
+                Width="310"
+                Classes="H1">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Content="Publish Selected API"
+                    Classes="H2"
+                    x:DataType="vm:PublishApiViewModel"
+                    Command="{Binding PublishApiCommand}"
+                    Margin="10"/>
+            <Button Content="Refresh API List"
+                    Classes="H2"
+                    x:DataType="vm:PublishApiViewModel"
+                    Command="{Binding RefreshApiListCommand}"
+                    Margin="10"/>
+        </StackPanel>
+
+    </Grid>
+</UserControl>
+
+
+
+PublishApiView.axaml.cs
+
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using QuickEndpoint.ViewModels;
+
+namespace QuickEndpoint.Views
+{
+    public partial class PublishApiView : UserControl
+    {
+        public PublishApiView()
+        {
+            InitializeComponent();
+            DataContext = new PublishApiViewModel();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+    }
+}
+
+
