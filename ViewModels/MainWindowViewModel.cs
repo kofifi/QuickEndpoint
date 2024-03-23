@@ -10,7 +10,8 @@ namespace QuickEndpoint.ViewModels
         public ReactiveCommand<Unit, Unit> EditApiCommand { get; }
         public ReactiveCommand<Unit, Unit> PublishApiCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenSettingsCommand { get; }
-
+        private static MainWindowViewModel _current;
+        public static MainWindowViewModel Current => _current;
         private ViewModelBase _currentViewModel;
         public ViewModelBase CurrentViewModel
         {
@@ -27,6 +28,7 @@ namespace QuickEndpoint.ViewModels
 
             // Ustawienie początkowego ViewModelu
             CurrentViewModel = new DashboardViewModel();
+            _current = this;
         }
 
         private void ExecuteCreateApi()

@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QuickEndpoint.Views.EditApiDetailsView"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             x:CompileBindings="True">
+
+    <DockPanel LastChildFill="True">
+        <!-- Left Sidebar for Navigation -->
+        <ListBox DockPanel.Dock="Left" Width="200" ItemsSource="{Binding AvailableEndpoints}"
+                 SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsViewModel">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Right upper corner for API Name and other details -->
+        <StackPanel HorizontalAlignment="Stretch">
+            <TextBlock Text="{Binding ApiName}" HorizontalAlignment="Right" Margin="10" 
+                       VerticalAlignment="Top" FontSize="16" FontWeight="Bold"
+                       x:DataType="vm:EditApiDetailsViewModel"/>
+            <!-- Other content goes here -->
+        </StackPanel>
+    </DockPanel>
+</UserControl>

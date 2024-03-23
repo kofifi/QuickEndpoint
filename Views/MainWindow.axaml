@@ -23,8 +23,8 @@
       <MenuItem Header="Settings" Command="{Binding OpenSettingsCommand}" x:DataType="vm:MainWindowViewModel"/>
     </Menu>
 
-    <Grid DockPanel.Dock="Right" HorizontalAlignment="Center" VerticalAlignment="Center">
-      <ContentControl Content="{Binding CurrentViewModel}" x:DataType="vm:MainWindowViewModel">
+    <Grid DockPanel.Dock="Right">
+      <ContentControl Content="{Binding CurrentViewModel}" x:DataType="vm:MainWindowViewModel" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
 
       </ContentControl>
     </Grid>

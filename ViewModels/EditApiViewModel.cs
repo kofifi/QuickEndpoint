@@ -37,8 +37,16 @@ public class EditApiViewModel : ViewModelBase
 
         private void EditApi()
         {
-            // Logic for editing the selected API goes here.
+            // Assuming MainWindowViewModel.Current has been implemented to allow changing the current ViewModel.
+            var editDetailsViewModel = new EditApiDetailsViewModel
+            {
+                ApiName = this.ApiName // Passing the ApiName to the new ViewModel.
+            };
+            
+            // Now, you would set this ViewModel to be the current one shown in the MainWindow or the relevant container.
+            MainWindowViewModel.Current.CurrentViewModel = editDetailsViewModel;
         }
+
 
         public void RefreshAvailableApis()
         {
