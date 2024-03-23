@@ -329,20 +329,50 @@ namespace QuickEndpoint.ViewModels
 
 OpenSettingsViewModel.cs
 
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Styling;
 using ReactiveUI;
+using System;
+using Material.Styles; // Correct namespace for Material.Avalonia
 
 namespace QuickEndpoint.ViewModels
 {
     public class OpenSettingsViewModel : ViewModelBase
     {
-        private string _apiName;
-        public string ApiName
+        private bool _isDarkThemeEnabled;
+
+        // Property to track if dark theme is enabled
+        public bool IsDarkThemeEnabled
         {
-            get => _apiName;
-            set => this.RaiseAndSetIfChanged(ref _apiName, value);
+            get => _isDarkThemeEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _isDarkThemeEnabled, value);
+                ApplyTheme(value);
+            }
         }
 
-        public override string Greeting => "Hello from OpenSettingsViewModel";
+        private void ApplyTheme(bool useDarkTheme)
+        {
+            // Construct the URI for the theme resource
+            var themeUri = useDarkTheme ? 
+                "avares://QuickEndpoint/Themes/DarkTheme.axaml" :
+                "avares://QuickEndpoint/Themes/LightTheme.axaml";
+
+            var theme = new StyleInclude(new Uri(themeUri))
+            {
+                Source = new Uri(themeUri)
+            };
+
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                // Assuming there is a main window and its styles can be manipulated
+                desktop.MainWindow.Styles.Clear();
+                desktop.MainWindow.Styles.Add(theme);
+            }
+        }
     }
 }
 
@@ -357,6 +387,7 @@ using System.Reactive;
 using Avalonia.Collections;
 using ReactiveUI;
 using QuickEndpoint_MainApp.Modules;
+using System.Threading.Tasks;
 
 namespace QuickEndpoint.ViewModels
 {
@@ -366,6 +397,20 @@ namespace QuickEndpoint.ViewModels
         private AvaloniaList<string> _availableApis = new AvaloniaList<string>();
         public ReactiveCommand<Unit, Unit> PublishApiCommand { get; }
         public ReactiveCommand<Unit, Unit> RefreshApiListCommand { get; }
+
+        private bool _isPublishingApi;
+        public bool IsPublishingApi
+        {
+            get => _isPublishingApi;
+            set => this.RaiseAndSetIfChanged(ref _isPublishingApi, value);
+        }
+
+        private double _publishApiProgress;
+        public double publishApiProgress
+        {
+            get => _publishApiProgress;
+            set => this.RaiseAndSetIfChanged(ref _publishApiProgress, value);
+        }
 
         public string ApiName
         {
@@ -381,45 +426,84 @@ namespace QuickEndpoint.ViewModels
 
         public PublishApiViewModel()
         {
-            PublishApiCommand = ReactiveCommand.Create(PublishApi);
+            PublishApiCommand = ReactiveCommand.CreateFromTask(PublishApiAsync);
             RefreshApiListCommand = ReactiveCommand.Create(RefreshAvailableApis);
 
             // Initial refresh to populate available APIs.
             RefreshAvailableApis();
         }
 
-            private void PublishApi()
+private async Task PublishApiAsync()
+{
+    if (string.IsNullOrEmpty(ApiName))
     {
-        if (string.IsNullOrEmpty(ApiName))
-        {
-            Console.WriteLine("No API selected for publishing.");
-            return;
-        }
-
-        try
-        {
-            string baseDirectory = Environment.CurrentDirectory;
-            // Adjust to use Data\Installers directory
-            string installersDir = Path.Combine(baseDirectory, "Data", "Installers", ApiName);
-
-            // Ensure the directory exists
-            Directory.CreateDirectory(installersDir);
-
-            // Example of determining the entry point dynamically. Adjust as needed.
-            string entryPoint = $"{ApiName}.exe"; // Assuming an executable named after the API
-            string nssmExecutablePath = "path\\to\\nssm.exe"; // Adjust according to your environment
-
-            // Generate the installer and uninstaller scripts
-            InstallerScriptGenerator.GenerateScript(ApiName, entryPoint, installersDir, nssmExecutablePath);
-            InstallerScriptGenerator.GenerateUninstallScript(ApiName, installersDir, ApiName); 
-
-            Console.WriteLine($"Installer and uninstaller scripts for '{ApiName}' have been generated in {installersDir}.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An error occurred while publishing API '{ApiName}': {ex.Message}");
-        }
+        LogDebugInfo("No API selected for publishing.");
+        return;
     }
+
+    try
+    {
+        IsPublishingApi = true;
+        LogDebugInfo("PublishApi method execution started.");
+
+        // Step 1: Setup directories
+        await Task.Delay(250);
+        publishApiProgress = 0; // Indicate initial setup is starting
+
+        string baseDirectory = Environment.CurrentDirectory;
+        string sourceProjectDir = Path.Combine(baseDirectory, "Data", "CreatedApis", ApiName);
+        string publishedApisDir = Path.Combine(baseDirectory, "Data", "PublishedApis", ApiName);
+        string toolsDir = Path.Combine(baseDirectory, "Data", "Tools", "nssm", "win64");
+        Directory.CreateDirectory(publishedApisDir);
+        LogDebugInfo("Directories setup completed.");
+        
+        // Step 2: Publish the API
+        await Task.Delay(500);
+        publishApiProgress = 0.4; // Indicate publishing starts
+
+        string configuration = "Release";
+        ApplicationPublisher.PublishApplication(sourceProjectDir, publishedApisDir, configuration, LogDebugInfo);
+        LogDebugInfo("API published.");
+
+        // Step 3: Copy necessary tools
+        await Task.Delay(500);
+        publishApiProgress = 0.6; // Publishing completed
+        string nssmSourcePath = Path.Combine(toolsDir, "nssm.exe");
+        string nssmDestinationPath = Path.Combine(publishedApisDir, "nssm.exe");
+        if (File.Exists(nssmSourcePath))
+        {
+            File.Copy(nssmSourcePath, nssmDestinationPath, overwrite: true);
+            LogDebugInfo("nssm.exe has been copied to the published API directory.");
+        }
+        else
+        {
+            LogDebugInfo("nssm.exe was not found in the tools directory.");
+        }
+        
+        // Step 4: Generate install and uninstall scripts
+        await Task.Delay(500);
+        publishApiProgress = 0.8; // Tool copy completed
+
+        InstallerScriptGenerator.GenerateBatchInstallScript(ApiName, publishedApisDir, LogDebugInfo);
+        InstallerScriptGenerator.GenerateBatchUninstallScript(ApiName, publishedApisDir, LogDebugInfo);
+        LogDebugInfo($"Scripts for '{ApiName}' generated.");
+
+        // Setp 5: Finalize the process
+        publishApiProgress = 1.0; // Update progress to 100% after completion
+        await Task.Delay(500);
+        
+        LogDebugInfo("API publishing process completed.");
+    }
+    catch (Exception ex)
+    {
+        LogDebugInfo($"An error occurred while publishing API '{ApiName}': {ex.Message}");
+    }
+    finally
+    {
+        IsPublishingApi = false;
+    }
+}
+
 
 
         public void RefreshAvailableApis()
@@ -439,102 +523,61 @@ namespace QuickEndpoint.ViewModels
                 Console.WriteLine($"An error occurred while refreshing available APIs: {ex.Message}");
             }
         }
+
+        private void LogDebugInfo(string message)
+        {
+            // Append the timestamp to every log entry for better tracking
+            string logEntry = $"{DateTime.Now}: {message}\n";
+            File.AppendAllText("debug.log", logEntry);
+        }
     }
 }
 
 namespace QuickEndpoint_MainApp.Modules
 {
+
     public static class ApplicationPublisher
     {
-        public static void PublishApplication(string projectDir, string publishDir, string configuration)
+        public static void PublishApplication(string projectDir, string publishDir, string configuration, Action<string> logger)
         {
-            Utilities.ExecuteProcess("dotnet", $"publish \"{projectDir}\" -c {configuration} -o \"{publishDir}\"");
-            Console.WriteLine($"The application has been published to {publishDir}");
+            Utilities.ExecuteProcess("dotnet", $"publish \"{projectDir}\" -c {configuration} -o \"{publishDir}\"", logger);
+            logger($"The application has been published to {publishDir}");
         }
     }
 
     public static class InstallerScriptGenerator
     {
-        public static void GenerateScript(string appName, string entryPoint, string installersDir, string nssmExecutablePath)
+        public static void GenerateBatchInstallScript(string appName, string directory, Action<string> logger)
         {
-            // PowerShell script template with parameters for customization omitted for brevity
-            string scriptTemplate = @$"
-param(
-    [string]$ServiceName = '{appName}',
-    [string]$EntryPoint = '{entryPoint}'
-)
+            string installScriptPath = Path.Combine(directory, "install.bat");
+            string batchContent = @$"@echo off
+                                  echo Installing {appName}...
+                                  REM Example command to install service using NSSM and current directory for paths
+                                  cd /d %~dp0
+                                  nssm.exe install {appName} ""%~dp0{appName}.exe""
+                                  echo Installation completed.
+                                  pause";
 
-$serviceName = $ServiceName
-$serviceDisplayName = $ServiceName
-$appDirectory = '{installersDir}'  # Application directory
-$nssmPath = '{nssmExecutablePath}'
-
-# Function for logging messages
-function Log-Message {{
-    param(
-        [string]$Message,
-        [string]$Level = 'Info'
-    )
-    $timeStamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-    Write-Output ""[$timeStamp][$Level] $Message""
-}}
-
-# Ensure the application directory exists
-Log-Message 'Ensuring the application directory exists...'
-if (-Not (Test-Path $appDirectory)) {{
-    New-Item -ItemType Directory -Path $appDirectory
-    Log-Message 'Application directory created.'
-}}
-
-$exePath = Join-Path $appDirectory $EntryPoint
-
-# Check if the service already exists with NSSM and remove it if necessary
-Log-Message 'Checking if the service already exists...'
-$status = & $nssmPath status $serviceName
-if ($status -ne 'SERVICE_NOT_FOUND') {{
-    Log-Message 'Service already exists. Removing existing service...'
-    & $nssmPath stop $serviceName
-    & $nssmPath remove $serviceName confirm
-}}
-
-# Use NSSM to install the service
-Log-Message 'Installing service with NSSM...'
-& $nssmPath install $serviceName `""$exePath`""
-
-# Set service description with NSSM (optional)
-& $nssmPath set $serviceName Description `""$serviceDisplayName`""
-
-# Attempt to start the service with NSSM
-try {{
-    & $nssmPath start $serviceName
-    Log-Message '$serviceName service installed and started with NSSM.'
-}} catch {{
-    Log-Message 'Failed to start the service. Please check the service configuration.'
-}}
-";
-
-            string scriptPath = Path.Combine(installersDir, $"{appName}_install.ps1");
-            File.WriteAllText(scriptPath, scriptTemplate);
-            Console.WriteLine($"Installer script has been saved at: {scriptPath}");
+            File.WriteAllText(installScriptPath, batchContent);
+            logger($"Install script has been saved at: {installScriptPath}");
         }
 
-        public static void GenerateUninstallScript(string appName, string uninstallersDir, string serviceName)
+        public static void GenerateBatchUninstallScript(string appName, string directory, Action<string> logger)
         {
-            // PowerShell script template for uninstallation omitted for brevity
-            string uninstallScriptTemplate = @"
-param(
-    [string]$ServiceName = '{serviceName}'
-)
+            string uninstallScriptPath = Path.Combine(directory, "uninstall.bat");
+            string batchContent = @$"@echo off
+                                  echo Uninstalling {appName}...
+                                  REM Example command to uninstall service using NSSM
+                                  cd /d %~dp0
+                                  nssm.exe remove {appName} confirm
+                                  echo Uninstallation completed.
+                                  pause";
 
-# Use sc.exe to stop and then delete the service
-& sc.exe stop $ServiceName
-& sc.exe delete $ServiceName
-";
-            string uninstallScriptPath = Path.Combine(uninstallersDir, $"{appName}_uninstall.ps1");
-            File.WriteAllText(uninstallScriptPath, uninstallScriptTemplate);
-            Console.WriteLine($"Uninstaller script has been saved at: {uninstallScriptPath}");
+            File.WriteAllText(uninstallScriptPath, batchContent);
+            logger($"Uninstall script has been saved at: {uninstallScriptPath}");
         }
     }
+
 
     public static class Utilities
     {
@@ -552,21 +595,31 @@ param(
             }
         }
 
-        public static void ExecuteProcess(string fileName, string arguments)
+        public static void ExecuteProcess(string fileName, string arguments, Action<string> logger)
         {
             using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = fileName,
                 Arguments = arguments,
                 RedirectStandardOutput = true,
-                UseShellExecute = false
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
             });
+            
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
+
             process.WaitForExit();
 
-            var output = process.StandardOutput.ReadToEnd();
             if (!string.IsNullOrEmpty(output))
             {
-                Console.WriteLine(output);
+                logger(output);
+            }
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                logger("Error: " + error);
             }
 
             if (process.ExitCode != 0)
@@ -934,8 +987,27 @@ OpenSettingsView.axaml
 
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="QuickEndpoint.Views.OpenSettingsView">
-    <!-- UI definition here -->
+             x:Class="QuickEndpoint.Views.OpenSettingsView"
+             xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             xmlns:c="clr-namespace:QuickEndpoint.Converters"
+             x:CompileBindings="True">
+
+    <UserControl.DataContext>
+        <vm:OpenSettingsViewModel/>
+    </UserControl.DataContext>
+
+    <UserControl.Resources>
+        <c:BooleanToVisibilityConverter x:Key="BooleanToThemeConverter"/>
+    </UserControl.Resources>
+
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <!-- Theme Toggle Switch -->
+        <TextBlock Text="Theme:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+        <ToggleButton IsChecked="{Binding IsDarkThemeEnabled, Mode=TwoWay}" 
+                      Content="{Binding IsDarkThemeEnabled, Converter={StaticResource BooleanToThemeConverter}}"
+                      HorizontalAlignment="Center"
+                      x:DataType="vm:OpenSettingsViewModel"/>
+    </StackPanel>
 </UserControl>
 
 
@@ -947,7 +1019,7 @@ using QuickEndpoint.ViewModels;
 
 namespace QuickEndpoint.Views
 {
-    public partial class OpenSettingsView : Window
+    public partial class OpenSettingsView : UserControl
     {
         public OpenSettingsView()
         {
@@ -969,11 +1041,16 @@ PublishApiView.axaml
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="QuickEndpoint.Views.PublishApiView"
              xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             xmlns:c="clr-namespace:QuickEndpoint.Converters"
              x:CompileBindings="True">
 
     <UserControl.DataContext>
         <vm:PublishApiViewModel/>
     </UserControl.DataContext>
+
+    <UserControl.Resources>
+    <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
 
     <UserControl.Styles>
             <Style Selector="TextBlock.H1">
@@ -1034,6 +1111,14 @@ PublishApiView.axaml
                     Command="{Binding RefreshApiListCommand}"
                     Margin="10"/>
         </StackPanel>
+
+        <ProgressBar Grid.Row="5"
+                 IsVisible="{Binding IsPublishingApi}"
+                 x:DataType="vm:PublishApiViewModel"
+                 Value="{Binding publishApiProgress, Mode=OneWay}"
+                 Height="20"
+                 Maximum="1"
+                 Margin="0,25,0,0"/>
 
     </Grid>
 </UserControl>

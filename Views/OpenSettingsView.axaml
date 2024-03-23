@@ -1,5 +1,24 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="QuickEndpoint.Views.OpenSettingsView">
-    <!-- UI definition here -->
+             x:Class="QuickEndpoint.Views.OpenSettingsView"
+             xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             xmlns:c="clr-namespace:QuickEndpoint.Converters"
+             x:CompileBindings="True">
+
+    <UserControl.DataContext>
+        <vm:OpenSettingsViewModel/>
+    </UserControl.DataContext>
+
+    <UserControl.Resources>
+        <c:BooleanToVisibilityConverter x:Key="BooleanToThemeConverter"/>
+    </UserControl.Resources>
+
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <!-- Theme Toggle Switch -->
+        <TextBlock Text="Theme:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+        <ToggleButton IsChecked="{Binding IsDarkThemeEnabled, Mode=TwoWay}" 
+                      Content="{Binding IsDarkThemeEnabled, Converter={StaticResource BooleanToThemeConverter}}"
+                      HorizontalAlignment="Center"
+                      x:DataType="vm:OpenSettingsViewModel"/>
+    </StackPanel>
 </UserControl>

@@ -2,11 +2,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="QuickEndpoint.Views.PublishApiView"
              xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             xmlns:c="clr-namespace:QuickEndpoint.Converters"
              x:CompileBindings="True">
 
     <UserControl.DataContext>
         <vm:PublishApiViewModel/>
     </UserControl.DataContext>
+
+    <UserControl.Resources>
+    <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
 
     <UserControl.Styles>
             <Style Selector="TextBlock.H1">
@@ -67,6 +72,14 @@
                     Command="{Binding RefreshApiListCommand}"
                     Margin="10"/>
         </StackPanel>
+
+        <ProgressBar Grid.Row="5"
+                 IsVisible="{Binding IsPublishingApi}"
+                 x:DataType="vm:PublishApiViewModel"
+                 Value="{Binding publishApiProgress, Mode=OneWay}"
+                 Height="20"
+                 Maximum="1"
+                 Margin="0,25,0,0"/>
 
     </Grid>
 </UserControl>

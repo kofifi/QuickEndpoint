@@ -4,7 +4,7 @@ using QuickEndpoint.ViewModels;
 
 namespace QuickEndpoint.Views
 {
-    public partial class OpenSettingsView : Window
+    public partial class OpenSettingsView : UserControl
     {
         public OpenSettingsView()
         {

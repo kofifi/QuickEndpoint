@@ -1,0 +1,16 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:QuickEndpoint"
+             xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+  
+    <Application.Styles>
+        <FluentTheme />
+         <themes:MaterialTheme BaseTheme="Dark" PrimaryColor="Amber" />
+    </Application.Styles>
+
+</Application>
