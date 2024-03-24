@@ -4,10 +4,8 @@ using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 using ReactiveUI;
 using System;
-using Material.Styles; // Correct namespace for Material.Avalonia
 
-namespace QuickEndpoint.ViewModels
-{
+namespace QuickEndpoint.ViewModels;
     public class OpenSettingsViewModel : ViewModelBase
     {
         private bool _isDarkThemeEnabled;
@@ -43,4 +41,3 @@ namespace QuickEndpoint.ViewModels
             }
         }
     }
-}

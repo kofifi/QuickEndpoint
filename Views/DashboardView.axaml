@@ -17,9 +17,9 @@
             </Style>
         </UserControl.Styles>
     
-        <StackPanel>
-          <TextBlock Classes="H1">Welcome to the QuickEndpoint</TextBlock>
-          <TextBlock Classes="H2" Text="Start creating your own API!"/>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Classes="H1">Welcome to the QuickEndpoint</TextBlock>
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Classes="H2" Text="Start creating your own API!"/>
         </StackPanel>
         
 </UserControl>

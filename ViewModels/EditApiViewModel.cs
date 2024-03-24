@@ -5,8 +5,7 @@ using System.Linq;
 using System.Reactive;
 using Avalonia.Collections;
 
-namespace QuickEndpoint.ViewModels
-{
+namespace QuickEndpoint.ViewModels;
 public class EditApiViewModel : ViewModelBase
 {
     private string _apiName;
@@ -93,4 +92,3 @@ public class EditApiViewModel : ViewModelBase
             File.AppendAllText(logFilePath, logEntry);
         }
     }
-}

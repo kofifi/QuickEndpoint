@@ -1,8 +1,7 @@
 using ReactiveUI;
 using System;
 
-namespace QuickEndpoint.ViewModels
-{
+namespace QuickEndpoint.ViewModels;
     public class DashboardViewModel : ViewModelBase
     {
         private string _apiName;
@@ -15,4 +14,3 @@ namespace QuickEndpoint.ViewModels
         public override string Greeting => "Hello from DashboardViewModel";
 
     }
-}

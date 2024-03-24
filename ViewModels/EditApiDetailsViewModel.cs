@@ -1,10 +1,8 @@
 using ReactiveUI;
-using System;
 using Avalonia.Collections;
 using System.Reactive;
 
-namespace QuickEndpoint.ViewModels
-{
+namespace QuickEndpoint.ViewModels;
     public class EditApiDetailsViewModel : ViewModelBase
     {
         private AvaloniaList<string> _availableEndpoints;
@@ -56,4 +54,3 @@ namespace QuickEndpoint.ViewModels
 
         // Include additional functionality as necessary, such as commands for editing specific endpoints, adding new ones, etc.
     }
-}

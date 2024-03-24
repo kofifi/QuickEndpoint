@@ -2,8 +2,7 @@
 using ReactiveUI;
 using System.Reactive;
 
-namespace QuickEndpoint.ViewModels  
-{
+namespace QuickEndpoint.ViewModels;
     public class MainWindowViewModel : ReactiveObject
     {
         public ReactiveCommand<Unit, Unit> CreateApiCommand { get; }
@@ -51,4 +50,3 @@ namespace QuickEndpoint.ViewModels
             CurrentViewModel = new OpenSettingsViewModel();
         }
     }
-}

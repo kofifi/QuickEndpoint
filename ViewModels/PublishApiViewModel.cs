@@ -42,6 +42,10 @@ namespace QuickEndpoint.ViewModels
             get => _availableApis;
             set => this.RaiseAndSetIfChanged(ref _availableApis, value);
         }
+        public string ApiName1 { get => _apiName; set => _apiName = value; }
+        public AvaloniaList<string> AvailableApis1 { get => _availableApis; set => _availableApis = value; }
+        public bool IsPublishingApi1 { get => _isPublishingApi; set => _isPublishingApi = value; }
+        public double PublishApiProgress { get => _publishApiProgress; set => _publishApiProgress = value; }
 
         public PublishApiViewModel()
         {
@@ -52,76 +56,76 @@ namespace QuickEndpoint.ViewModels
             RefreshAvailableApis();
         }
 
-private async Task PublishApiAsync()
-{
-    if (string.IsNullOrEmpty(ApiName))
-    {
-        LogDebugInfo("No API selected for publishing.");
-        return;
-    }
-
-    try
-    {
-        IsPublishingApi = true;
-        LogDebugInfo("PublishApi method execution started.");
-
-        // Step 1: Setup directories
-        await Task.Delay(250);
-        publishApiProgress = 0; // Indicate initial setup is starting
-
-        string baseDirectory = Environment.CurrentDirectory;
-        string sourceProjectDir = Path.Combine(baseDirectory, "Data", "CreatedApis", ApiName);
-        string publishedApisDir = Path.Combine(baseDirectory, "Data", "PublishedApis", ApiName);
-        string toolsDir = Path.Combine(baseDirectory, "Data", "Tools", "nssm", "win64");
-        Directory.CreateDirectory(publishedApisDir);
-        LogDebugInfo("Directories setup completed.");
-        
-        // Step 2: Publish the API
-        await Task.Delay(500);
-        publishApiProgress = 0.4; // Indicate publishing starts
-
-        string configuration = "Release";
-        ApplicationPublisher.PublishApplication(sourceProjectDir, publishedApisDir, configuration, LogDebugInfo);
-        LogDebugInfo("API published.");
-
-        // Step 3: Copy necessary tools
-        await Task.Delay(500);
-        publishApiProgress = 0.6; // Publishing completed
-        string nssmSourcePath = Path.Combine(toolsDir, "nssm.exe");
-        string nssmDestinationPath = Path.Combine(publishedApisDir, "nssm.exe");
-        if (File.Exists(nssmSourcePath))
+        private async Task PublishApiAsync()
         {
-            File.Copy(nssmSourcePath, nssmDestinationPath, overwrite: true);
-            LogDebugInfo("nssm.exe has been copied to the published API directory.");
-        }
-        else
-        {
-            LogDebugInfo("nssm.exe was not found in the tools directory.");
-        }
-        
-        // Step 4: Generate install and uninstall scripts
-        await Task.Delay(500);
-        publishApiProgress = 0.8; // Tool copy completed
+            if (string.IsNullOrEmpty(ApiName))
+            {
+                LogDebugInfo("No API selected for publishing.");
+                return;
+            }
 
-        InstallerScriptGenerator.GenerateBatchInstallScript(ApiName, publishedApisDir, LogDebugInfo);
-        InstallerScriptGenerator.GenerateBatchUninstallScript(ApiName, publishedApisDir, LogDebugInfo);
-        LogDebugInfo($"Scripts for '{ApiName}' generated.");
+            try
+            {
+                IsPublishingApi = true;
+                LogDebugInfo("PublishApi method execution started.");
 
-        // Setp 5: Finalize the process
-        publishApiProgress = 1.0; // Update progress to 100% after completion
-        await Task.Delay(500);
-        
-        LogDebugInfo("API publishing process completed.");
-    }
-    catch (Exception ex)
-    {
-        LogDebugInfo($"An error occurred while publishing API '{ApiName}': {ex.Message}");
-    }
-    finally
-    {
-        IsPublishingApi = false;
-    }
-}
+                // Step 1: Setup directories
+                await Task.Delay(250);
+                publishApiProgress = 0; // Indicate initial setup is starting
+
+                string baseDirectory = Environment.CurrentDirectory;
+                string sourceProjectDir = Path.Combine(baseDirectory, "Data", "CreatedApis", ApiName);
+                string publishedApisDir = Path.Combine(baseDirectory, "Data", "PublishedApis", ApiName);
+                string toolsDir = Path.Combine(baseDirectory, "Data", "Tools", "nssm", "win64");
+                Directory.CreateDirectory(publishedApisDir);
+                LogDebugInfo("Directories setup completed.");
+
+                // Step 2: Publish the API
+                await Task.Delay(500);
+                publishApiProgress = 0.4; // Indicate publishing starts
+
+                string configuration = "Release";
+                ApplicationPublisher.PublishApplication(sourceProjectDir, publishedApisDir, configuration, LogDebugInfo);
+                LogDebugInfo("API published.");
+
+                // Step 3: Copy necessary tools
+                await Task.Delay(500);
+                publishApiProgress = 0.6; // Publishing completed
+                string nssmSourcePath = Path.Combine(toolsDir, "nssm.exe");
+                string nssmDestinationPath = Path.Combine(publishedApisDir, "nssm.exe");
+                if (File.Exists(nssmSourcePath))
+                {
+                    File.Copy(nssmSourcePath, nssmDestinationPath, overwrite: true);
+                    LogDebugInfo("nssm.exe has been copied to the published API directory.");
+                }
+                else
+                {
+                    LogDebugInfo("nssm.exe was not found in the tools directory.");
+                }
+
+                // Step 4: Generate install and uninstall scripts
+                await Task.Delay(500);
+                publishApiProgress = 0.8; // Tool copy completed
+
+                InstallerScriptGenerator.GenerateBatchInstallScript(ApiName, publishedApisDir, LogDebugInfo);
+                InstallerScriptGenerator.GenerateBatchUninstallScript(ApiName, publishedApisDir, LogDebugInfo);
+                LogDebugInfo($"Scripts for '{ApiName}' generated.");
+
+                // Setp 5: Finalize the process
+                publishApiProgress = 1.0; // Update progress to 100% after completion
+                await Task.Delay(500);
+
+                LogDebugInfo("API publishing process completed.");
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"An error occurred while publishing API '{ApiName}': {ex.Message}");
+            }
+            finally
+            {
+                IsPublishingApi = false;
+            }
+        }
 
 
 
@@ -225,7 +229,7 @@ namespace QuickEndpoint_MainApp.Modules
                 UseShellExecute = false,
                 CreateNoWindow = true
             });
-            
+
             var output = process.StandardOutput.ReadToEnd();
             var error = process.StandardError.ReadToEnd();
 
