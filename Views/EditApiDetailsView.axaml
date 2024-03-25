@@ -5,24 +5,49 @@
              VerticalAlignment="Stretch"
              xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
              x:CompileBindings="True">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Dla tytułu "Endpoints of the API" -->
+            <RowDefinition Height="Auto"/> <!-- Dla nazwy API -->
+            <RowDefinition Height="Auto"/> <!-- Dla formularza dodawania nowego endpointa -->
+            <RowDefinition Height="*"/>    <!-- Dla listy endpointów -->
+            <RowDefinition Height="Auto"/> <!-- Dla przycisków akcji -->
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"/> <!-- Lewa kolumna dla formularza i przycisków -->
+            <ColumnDefinition Width="2"/>   <!-- Separator -->
+            <ColumnDefinition Width="*"/>   <!-- Prawa kolumna dla listy -->
+        </Grid.ColumnDefinitions>
 
-    <DockPanel LastChildFill="True">
-        <!-- Left Sidebar for Navigation -->
-        <ListBox DockPanel.Dock="Left" Width="200" ItemsSource="{Binding AvailableEndpoints}"
-                 SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsViewModel">
+        <!-- Separator -->
+        <Border Grid.Row="0" Grid.RowSpan="5" Grid.Column="1" Background="LightGray" Width="2" Margin="0,10"/>
+
+        <!-- Tytuł "Endpoints of the API" wyświetlany w prawym górnym rogu -->
+        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Endpoints of the API" FontSize="24" FontWeight="Bold" Margin="0,10,0,20" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+
+        <!-- Nazwa API -->
+        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding ApiName}" Foreground="#FFC107" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,0,20,10" VerticalAlignment="Top" x:DataType="vm:EditApiDetailsViewModel"/>
+
+        <!-- Formularz dodawania nowego endpointa -->
+        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,10,20,10">
+            <TextBox Watermark="Enter new endpoint name" Width="360" Text="{Binding NewEndpointName, Mode=TwoWay}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <Button Content="Add New Endpoint" Width="360" Margin="10,5,0,0" Command="{Binding AddEndpointCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" FontWeight="Bold" Width="360" TextWrapping="Wrap" Margin="0,10,0,0" x:DataType="vm:EditApiDetailsViewModel"/>
+        </StackPanel>
+
+        <!-- Przyciski akcji -->
+        <UniformGrid Grid.Row="4" Grid.Column="0" Rows="1" Columns="2" Margin="0,10,20,10">
+            <Button Content="Edit Selected" Width="175" Margin="5,0" Command="{Binding EditSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <Button Content="Delete Selected" Width="175" Command="{Binding DeleteSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
+        </UniformGrid>
+
+        <!-- Lista endpointów -->
+        <ListBox Grid.Row="2" Grid.RowSpan="3" Grid.Column="2" Margin="20,10,20,10" ItemsSource="{Binding AvailableEndpoints}" SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsViewModel">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding}" />
+                    <TextBlock Text="{Binding}" Margin="2"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-
-        <!-- Right upper corner for API Name and other details -->
-        <StackPanel HorizontalAlignment="Stretch">
-            <TextBlock Text="{Binding ApiName}" HorizontalAlignment="Right" Margin="10" 
-                       VerticalAlignment="Top" FontSize="16" FontWeight="Bold"
-                       x:DataType="vm:EditApiDetailsViewModel"/>
-            <!-- Other content goes here -->
-        </StackPanel>
-    </DockPanel>
+    </Grid>
 </UserControl>

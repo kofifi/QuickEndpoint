@@ -7,153 +7,151 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using System.Reactive;
 
-namespace QuickEndpoint.ViewModels
+namespace QuickEndpoint.ViewModels;
+public class CreateApiViewModel : ViewModelBase
 {
-    public class CreateApiViewModel : ViewModelBase
+
+    private bool _isCreatingApi;
+    public bool IsCreatingApi
     {
-
-        private bool _isCreatingApi;
-        public bool IsCreatingApi
-        {
-            get => _isCreatingApi;
-            set => this.RaiseAndSetIfChanged(ref _isCreatingApi, value);
-        }
-
-        private string _errorMessage;
-        public string ErrorMessage
-        {
-            get => _errorMessage;
-            set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
-        }
-
-        private double _createApiProgress;
-        public double CreateApiProgress
-        {
-            get => _createApiProgress;
-            set => this.RaiseAndSetIfChanged(ref _createApiProgress, value);
-        }
-
-        private string _apiName;
-        public string ApiName
-        {
-            get => _apiName;
-            set => this.RaiseAndSetIfChanged(ref _apiName, value);
-        }
-
-        private string _nameOfApi;
-        public string NameOfApi
-        {
-            get => _nameOfApi;
-            set => this.RaiseAndSetIfChanged(ref _nameOfApi, value);
-        }
-
-        private string _descriptionOfApi;
-        public string DescriptionOfApi
-        {
-            get => _descriptionOfApi;
-            set => this.RaiseAndSetIfChanged(ref _descriptionOfApi, value);
-        }
-
-        // Command property
-        public ReactiveCommand<Unit, Unit> CreateApiCommand { get; }
-
-        public CreateApiViewModel()
-        {
-            // Initialize the command with a method to call
-            CreateApiCommand = ReactiveCommand.CreateFromTask(CreateApiAsync);
-
-            // Other initializations...
-        }
-
-private async Task CreateApiAsync()
-{
-    IsCreatingApi = true;
-    CreateApiProgress = 0.0; // Start progress at 0%
-    LogDebugInfo("CreateApi method execution started.");
-
-    try
-    {
-        // Simulate initial setup work
-        await Task.Delay(500); // Simulate some initial work
-        CreateApiProgress = 0.1; // Update progress to 10%
-        LogDebugInfo("Initial setup completed.");
-
-        // Directory and project setup
-        string baseDirectory = Environment.CurrentDirectory;
-        string apisDirectory = Path.Combine(baseDirectory, "Data", "CreatedApis");
-        if (!Directory.Exists(apisDirectory))
-        {
-            Directory.CreateDirectory(apisDirectory);
-        }
-        string projectDirectory = Path.Combine(apisDirectory, NameOfApi);
-        if (Directory.Exists(projectDirectory))
-        {
-            ErrorMessage = "API with this name already exists.";
-            return; // Wyjdź z metody, nie kontynuując tworzenia API
-        }
-        else
-        {
-            ErrorMessage = ""; // Wyczyść komunikat o błędzie, jeśli katalog nie istnieje
-        }
-        Directory.CreateDirectory(projectDirectory);
-        LogDebugInfo("Project directory setup completed.");
-        await Task.Delay(500); // Simulate time taken for directory setup
-        CreateApiProgress = 0.3; // Update progress to 30%
-
-        // Process start and execution
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            Arguments = "new webapp",
-            WorkingDirectory = projectDirectory,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using (var process = new Process { StartInfo = startInfo })
-        {
-            process.Start();
-            LogDebugInfo("dotnet process started.");
-            while (!process.HasExited)
-            {
-                await Task.Delay(1000); // Wait a bit before updating the progress
-                CreateApiProgress = Math.Min(CreateApiProgress + 0.2, 0.9); // Ensure progress does not exceed 90%
-            }
-            string output = await process.StandardOutput.ReadToEndAsync();
-            string error = await process.StandardError.ReadToEndAsync();
-            if (!string.IsNullOrEmpty(output))
-            {
-                File.WriteAllText(Path.Combine(projectDirectory, "api_creation_output.txt"), output);
-            }
-            if (!string.IsNullOrEmpty(error))
-            {
-                LogDebugInfo($"dotnet process error: {error}");
-            }
-        }
-
-        await Task.Delay(500); // Finalize everything
-        CreateApiProgress = 1.0; // Ensure progress is set to 100% after completion
-        await Task.Delay(500); // Finalize everything
-        LogDebugInfo("API creation process completed.");
+        get => _isCreatingApi;
+        set => this.RaiseAndSetIfChanged(ref _isCreatingApi, value);
     }
-    catch (Exception ex)
-    {
-        LogDebugInfo($"An error occurred: {ex.Message}");
-    }
-    finally
-    {
-        IsCreatingApi = false;
-    }
-}
 
-        private void LogDebugInfo(string message)
+    private string _errorMessage;
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
+    }
+
+    private double _createApiProgress;
+    public double CreateApiProgress
+    {
+        get => _createApiProgress;
+        set => this.RaiseAndSetIfChanged(ref _createApiProgress, value);
+    }
+
+    private string _apiName;
+    public string ApiName
+    {
+        get => _apiName;
+        set => this.RaiseAndSetIfChanged(ref _apiName, value);
+    }
+
+    private string _nameOfApi;
+    public string NameOfApi
+    {
+        get => _nameOfApi;
+        set => this.RaiseAndSetIfChanged(ref _nameOfApi, value);
+    }
+
+    private string _descriptionOfApi;
+    public string DescriptionOfApi
+    {
+        get => _descriptionOfApi;
+        set => this.RaiseAndSetIfChanged(ref _descriptionOfApi, value);
+    }
+
+    // Command property
+    public ReactiveCommand<Unit, Unit> CreateApiCommand { get; }
+
+    public CreateApiViewModel()
+    {
+        // Initialize the command with a method to call
+        CreateApiCommand = ReactiveCommand.CreateFromTask(CreateApiAsync);
+
+        // Other initializations...
+    }
+
+    private async Task CreateApiAsync()
+    {
+        IsCreatingApi = true;
+        CreateApiProgress = 0.0; // Start progress at 0%
+        LogDebugInfo("CreateApi method execution started.");
+
+        try
         {
-            // Append the timestamp to every log entry for better tracking
-            string logEntry = $"{DateTime.Now}: {message}\n";
-            File.AppendAllText("debug.log", logEntry);
+            // Simulate initial setup work
+            await Task.Delay(500); // Simulate some initial work
+            CreateApiProgress = 0.1; // Update progress to 10%
+            LogDebugInfo("Initial setup completed.");
+
+            // Directory and project setup
+            string baseDirectory = Environment.CurrentDirectory;
+            string apisDirectory = Path.Combine(baseDirectory, "Data", "CreatedApis");
+            if (!Directory.Exists(apisDirectory))
+            {
+                Directory.CreateDirectory(apisDirectory);
+            }
+            string projectDirectory = Path.Combine(apisDirectory, NameOfApi);
+            if (Directory.Exists(projectDirectory))
+            {
+                ErrorMessage = "API with this name already exists.";
+                return; // Wyjdź z metody, nie kontynuując tworzenia API
+            }
+            else
+            {
+                ErrorMessage = ""; // Wyczyść komunikat o błędzie, jeśli katalog nie istnieje
+            }
+            Directory.CreateDirectory(projectDirectory);
+            LogDebugInfo("Project directory setup completed.");
+            await Task.Delay(500); // Simulate time taken for directory setup
+            CreateApiProgress = 0.3; // Update progress to 30%
+
+            // Process start and execution
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = "new webapp",
+                WorkingDirectory = projectDirectory,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (var process = new Process { StartInfo = startInfo })
+            {
+                process.Start();
+                LogDebugInfo("dotnet process started.");
+                while (!process.HasExited)
+                {
+                    await Task.Delay(1000); // Wait a bit before updating the progress
+                    CreateApiProgress = Math.Min(CreateApiProgress + 0.2, 0.9); // Ensure progress does not exceed 90%
+                }
+                string output = await process.StandardOutput.ReadToEndAsync();
+                string error = await process.StandardError.ReadToEndAsync();
+                if (!string.IsNullOrEmpty(output))
+                {
+                    File.WriteAllText(Path.Combine(projectDirectory, "api_creation_output.txt"), output);
+                }
+                if (!string.IsNullOrEmpty(error))
+                {
+                    LogDebugInfo($"dotnet process error: {error}");
+                }
+            }
+
+            await Task.Delay(500); // Finalize everything
+            CreateApiProgress = 1.0; // Ensure progress is set to 100% after completion
+            await Task.Delay(500); // Finalize everything
+            LogDebugInfo("API creation process completed.");
         }
+        catch (Exception ex)
+        {
+            LogDebugInfo($"An error occurred: {ex.Message}");
+        }
+        finally
+        {
+            IsCreatingApi = false;
+        }
+    }
+
+    private void LogDebugInfo(string message)
+    {
+        // Append the timestamp to every log entry for better tracking
+        string logEntry = $"{DateTime.Now}: {message}\n";
+        File.AppendAllText("debug.log", logEntry);
     }
 }
 
@@ -162,8 +160,7 @@ DashboardViewModel.cs
 using ReactiveUI;
 using System;
 
-namespace QuickEndpoint.ViewModels
-{
+namespace QuickEndpoint.ViewModels;
     public class DashboardViewModel : ViewModelBase
     {
         private string _apiName;
@@ -176,18 +173,15 @@ namespace QuickEndpoint.ViewModels
         public override string Greeting => "Hello from DashboardViewModel";
 
     }
-}
 
 
 EditApiDetailsViewModel.cs
 
 using ReactiveUI;
-using System;
 using Avalonia.Collections;
 using System.Reactive;
 
-namespace QuickEndpoint.ViewModels
-{
+namespace QuickEndpoint.ViewModels;
     public class EditApiDetailsViewModel : ViewModelBase
     {
         private AvaloniaList<string> _availableEndpoints;
@@ -239,8 +233,6 @@ namespace QuickEndpoint.ViewModels
 
         // Include additional functionality as necessary, such as commands for editing specific endpoints, adding new ones, etc.
     }
-}
-
 
 EditApiViewModel.cs
 
@@ -251,8 +243,7 @@ using System.Linq;
 using System.Reactive;
 using Avalonia.Collections;
 
-namespace QuickEndpoint.ViewModels
-{
+namespace QuickEndpoint.ViewModels;
 public class EditApiViewModel : ViewModelBase
 {
     private string _apiName;
@@ -339,8 +330,6 @@ public class EditApiViewModel : ViewModelBase
             File.AppendAllText(logFilePath, logEntry);
         }
     }
-}
-
 
 MainWindowViewModel.cs
 
@@ -348,8 +337,7 @@ MainWindowViewModel.cs
 using ReactiveUI;
 using System.Reactive;
 
-namespace QuickEndpoint.ViewModels  
-{
+namespace QuickEndpoint.ViewModels;
     public class MainWindowViewModel : ReactiveObject
     {
         public ReactiveCommand<Unit, Unit> CreateApiCommand { get; }
@@ -397,7 +385,6 @@ namespace QuickEndpoint.ViewModels
             CurrentViewModel = new OpenSettingsViewModel();
         }
     }
-}
 
 
 OpenSettingsViewModel.cs
@@ -408,10 +395,8 @@ using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 using ReactiveUI;
 using System;
-using Material.Styles; // Correct namespace for Material.Avalonia
 
-namespace QuickEndpoint.ViewModels
-{
+namespace QuickEndpoint.ViewModels;
     public class OpenSettingsViewModel : ViewModelBase
     {
         private bool _isDarkThemeEnabled;
@@ -447,7 +432,6 @@ namespace QuickEndpoint.ViewModels
             }
         }
     }
-}
 
 
 PublishApiViewModel.cs
@@ -496,6 +480,10 @@ namespace QuickEndpoint.ViewModels
             get => _availableApis;
             set => this.RaiseAndSetIfChanged(ref _availableApis, value);
         }
+        public string ApiName1 { get => _apiName; set => _apiName = value; }
+        public AvaloniaList<string> AvailableApis1 { get => _availableApis; set => _availableApis = value; }
+        public bool IsPublishingApi1 { get => _isPublishingApi; set => _isPublishingApi = value; }
+        public double PublishApiProgress { get => _publishApiProgress; set => _publishApiProgress = value; }
 
         public PublishApiViewModel()
         {
@@ -506,76 +494,76 @@ namespace QuickEndpoint.ViewModels
             RefreshAvailableApis();
         }
 
-private async Task PublishApiAsync()
-{
-    if (string.IsNullOrEmpty(ApiName))
-    {
-        LogDebugInfo("No API selected for publishing.");
-        return;
-    }
-
-    try
-    {
-        IsPublishingApi = true;
-        LogDebugInfo("PublishApi method execution started.");
-
-        // Step 1: Setup directories
-        await Task.Delay(250);
-        publishApiProgress = 0; // Indicate initial setup is starting
-
-        string baseDirectory = Environment.CurrentDirectory;
-        string sourceProjectDir = Path.Combine(baseDirectory, "Data", "CreatedApis", ApiName);
-        string publishedApisDir = Path.Combine(baseDirectory, "Data", "PublishedApis", ApiName);
-        string toolsDir = Path.Combine(baseDirectory, "Data", "Tools", "nssm", "win64");
-        Directory.CreateDirectory(publishedApisDir);
-        LogDebugInfo("Directories setup completed.");
-        
-        // Step 2: Publish the API
-        await Task.Delay(500);
-        publishApiProgress = 0.4; // Indicate publishing starts
-
-        string configuration = "Release";
-        ApplicationPublisher.PublishApplication(sourceProjectDir, publishedApisDir, configuration, LogDebugInfo);
-        LogDebugInfo("API published.");
-
-        // Step 3: Copy necessary tools
-        await Task.Delay(500);
-        publishApiProgress = 0.6; // Publishing completed
-        string nssmSourcePath = Path.Combine(toolsDir, "nssm.exe");
-        string nssmDestinationPath = Path.Combine(publishedApisDir, "nssm.exe");
-        if (File.Exists(nssmSourcePath))
+        private async Task PublishApiAsync()
         {
-            File.Copy(nssmSourcePath, nssmDestinationPath, overwrite: true);
-            LogDebugInfo("nssm.exe has been copied to the published API directory.");
-        }
-        else
-        {
-            LogDebugInfo("nssm.exe was not found in the tools directory.");
-        }
-        
-        // Step 4: Generate install and uninstall scripts
-        await Task.Delay(500);
-        publishApiProgress = 0.8; // Tool copy completed
+            if (string.IsNullOrEmpty(ApiName))
+            {
+                LogDebugInfo("No API selected for publishing.");
+                return;
+            }
 
-        InstallerScriptGenerator.GenerateBatchInstallScript(ApiName, publishedApisDir, LogDebugInfo);
-        InstallerScriptGenerator.GenerateBatchUninstallScript(ApiName, publishedApisDir, LogDebugInfo);
-        LogDebugInfo($"Scripts for '{ApiName}' generated.");
+            try
+            {
+                IsPublishingApi = true;
+                LogDebugInfo("PublishApi method execution started.");
 
-        // Setp 5: Finalize the process
-        publishApiProgress = 1.0; // Update progress to 100% after completion
-        await Task.Delay(500);
-        
-        LogDebugInfo("API publishing process completed.");
-    }
-    catch (Exception ex)
-    {
-        LogDebugInfo($"An error occurred while publishing API '{ApiName}': {ex.Message}");
-    }
-    finally
-    {
-        IsPublishingApi = false;
-    }
-}
+                // Step 1: Setup directories
+                await Task.Delay(250);
+                publishApiProgress = 0; // Indicate initial setup is starting
+
+                string baseDirectory = Environment.CurrentDirectory;
+                string sourceProjectDir = Path.Combine(baseDirectory, "Data", "CreatedApis", ApiName);
+                string publishedApisDir = Path.Combine(baseDirectory, "Data", "PublishedApis", ApiName);
+                string toolsDir = Path.Combine(baseDirectory, "Data", "Tools", "nssm", "win64");
+                Directory.CreateDirectory(publishedApisDir);
+                LogDebugInfo("Directories setup completed.");
+
+                // Step 2: Publish the API
+                await Task.Delay(500);
+                publishApiProgress = 0.4; // Indicate publishing starts
+
+                string configuration = "Release";
+                ApplicationPublisher.PublishApplication(sourceProjectDir, publishedApisDir, configuration, LogDebugInfo);
+                LogDebugInfo("API published.");
+
+                // Step 3: Copy necessary tools
+                await Task.Delay(500);
+                publishApiProgress = 0.6; // Publishing completed
+                string nssmSourcePath = Path.Combine(toolsDir, "nssm.exe");
+                string nssmDestinationPath = Path.Combine(publishedApisDir, "nssm.exe");
+                if (File.Exists(nssmSourcePath))
+                {
+                    File.Copy(nssmSourcePath, nssmDestinationPath, overwrite: true);
+                    LogDebugInfo("nssm.exe has been copied to the published API directory.");
+                }
+                else
+                {
+                    LogDebugInfo("nssm.exe was not found in the tools directory.");
+                }
+
+                // Step 4: Generate install and uninstall scripts
+                await Task.Delay(500);
+                publishApiProgress = 0.8; // Tool copy completed
+
+                InstallerScriptGenerator.GenerateBatchInstallScript(ApiName, publishedApisDir, LogDebugInfo);
+                InstallerScriptGenerator.GenerateBatchUninstallScript(ApiName, publishedApisDir, LogDebugInfo);
+                LogDebugInfo($"Scripts for '{ApiName}' generated.");
+
+                // Setp 5: Finalize the process
+                publishApiProgress = 1.0; // Update progress to 100% after completion
+                await Task.Delay(500);
+
+                LogDebugInfo("API publishing process completed.");
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"An error occurred while publishing API '{ApiName}': {ex.Message}");
+            }
+            finally
+            {
+                IsPublishingApi = false;
+            }
+        }
 
 
 
@@ -679,7 +667,7 @@ namespace QuickEndpoint_MainApp.Modules
                 UseShellExecute = false,
                 CreateNoWindow = true
             });
-            
+
             var output = process.StandardOutput.ReadToEnd();
             var error = process.StandardError.ReadToEnd();
 
@@ -723,96 +711,83 @@ CreateApiView.axaml
              xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
              xmlns:c="clr-namespace:QuickEndpoint.Converters"
              x:Class="QuickEndpoint.Views.CreateApiView"
-             x:CompileBindings="True">
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             x:CompileBindings="True"
+             x:DataType="vm:CreateApiViewModel">
 
-  <UserControl.DataContext>
-    <vm:CreateApiViewModel/>
-  </UserControl.DataContext>
+    <UserControl.Resources>
+        <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
 
-<UserControl.Resources>
-  <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-</UserControl.Resources>
-
-<UserControl.Styles>
-            <Style Selector="TextBlock.H1">
-            <Setter Property="FontSize" Value="24"/>
+    <UserControl.Styles>
+        <Style Selector="TextBlock.H1">
+            <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="TextAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,10"/>
-            </Style>
-            <Style Selector="TextBlock.H2">
+            <Setter Property="Margin" Value="0,16,0,10"/> <!-- Adjusted margin to add space below -->
+            <Setter Property="HorizontalAlignment" Value="Center"/> <!-- Center alignment -->
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Margin" Value="0,10,0,0"/>
+            <Setter Property="Width" Value="250"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Margin" Value="20,20,20,0"/> <!-- Adjusted margin for symmetry -->
+            <Setter Property="Padding" Value="10"/>
             <Setter Property="FontSize" Value="16"/>
-            <Setter Property="TextAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,10"/>
-            </Style>
-</UserControl.Styles>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Width" Value="300"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="ProgressBar">
+            <Setter Property="Margin" Value="20,20,20,0"/> <!-- Adjusted margin for symmetry -->
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Maximum" Value="1"/>
+            <Setter Property="Width" Value="300"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Styles>
 
+    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/> <!-- For the Name pair -->
+            <ColumnDefinition Width="20"/>  <!-- Margin between the pairs -->
+            <ColumnDefinition Width="Auto"/> <!-- For the Description pair -->
+        </Grid.ColumnDefinitions>
 
+        <!-- Name Pair -->
+        <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center">
+            <TextBlock Text="Name" Classes="H1"/>
+            <TextBox Text="{Binding NameOfApi, Mode=TwoWay}" x:DataType="vm:CreateApiViewModel"/>
+        </StackPanel>
 
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/> <!-- Label for Name -->
-      <RowDefinition Height="Auto"/> <!-- TextBox for Name -->
-      <RowDefinition Height="Auto"/> <!-- Label for Description -->
-      <RowDefinition Height="*"/>   <!-- TextBox for Description -->
-      <RowDefinition Height="Auto"/> <!-- Button Row -->
-      <RowDefinition Height="Auto"/> <!-- Progressbar Row -->
-      <RowDefinition Height="Auto"/> <!-- Error Row -->
-    </Grid.RowDefinitions>
+        <!-- Description Pair -->
+        <StackPanel Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center">
+            <TextBlock Text="Description" Classes="H1"/>
+            <TextBox Text="{Binding DescriptionOfApi, Mode=TwoWay}" x:DataType="vm:CreateApiViewModel"/>
+        </StackPanel>
 
-    <!-- Label for the Name TextBox -->
-    <TextBlock Grid.Row="0" Classes="H1" Text="Name" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        <!-- Create API Button -->
+        <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                Command="{Binding CreateApiCommand}" Content="Create API" x:DataType="vm:CreateApiViewModel"/>
 
-    <!-- Name TextBox -->
-    <TextBox Grid.Row="1"
-             Margin="0 5"
-             Text="{Binding NameOfApi, Mode=TwoWay}"
-             x:DataType="vm:CreateApiViewModel"
-             Classes="H1"
-             Width="250"/>
+        <!-- ProgressBar -->
+        <ProgressBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                     IsVisible="{Binding IsCreatingApi}" 
+                     Value="{Binding CreateApiProgress, Mode=OneWay}" x:DataType="vm:CreateApiViewModel"/>
 
-    <!-- Label for the Description TextBox -->
-    <TextBlock Grid.Row="2" Classes="H1" Text="Description" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-
-    <!-- Description TextBox -->
-    <TextBox Grid.Row="3"
-            Margin="0 5"
-            Text="{Binding DescriptionOfApi, Mode=TwoWay}"
-            x:DataType="vm:CreateApiViewModel"
-            Classes="H1"
-            Width="250"/>
-
-    <!-- Create API Button -->
-    <Button Grid.Row="4" HorizontalAlignment="Center"
-            Margin="0,20,0,0"
-            Command="{Binding CreateApiCommand}"
-            x:DataType="vm:CreateApiViewModel"
-            Content="Create API"
-            Classes="H1"
-            Width="250"/>
-
-    <ProgressBar Grid.Row="5"
-                 IsVisible="{Binding IsCreatingApi}"
-                 x:DataType="vm:CreateApiViewModel"
-                 Value="{Binding CreateApiProgress, Mode=OneWay}"
-                 Height="20"
-                 Maximum="1"
-                 Margin="0,25,0,0"/>
-
-    <TextBlock Grid.Row="6" 
-               Grid.Column="0" 
-               Grid.ColumnSpan="2"
-               Text="{Binding ErrorMessage, Mode=OneWay}" 
-               x:DataType="vm:CreateApiViewModel"
-               TextWrapping="Wrap" 
-               Foreground="Red" 
-               HorizontalAlignment="Center" 
-               VerticalAlignment="Top"
-               Margin="10"/>
-
-
-
-  </Grid>
+        <!-- Error Message -->
+        <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"
+                   Text="{Binding ErrorMessage, Mode=OneWay}" 
+                   TextWrapping="Wrap" Foreground="Red" FontWeight="Bold" x:DataType="vm:CreateApiViewModel"/>
+    </Grid>
 </UserControl>
 
 
@@ -861,9 +836,9 @@ DashboardView.axaml
             </Style>
         </UserControl.Styles>
     
-        <StackPanel>
-          <TextBlock Classes="H1">Welcome to the QuickEndpoint</TextBlock>
-          <TextBlock Classes="H2" Text="Start creating your own API!"/>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Classes="H1">Welcome to the QuickEndpoint</TextBlock>
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Classes="H2" Text="Start creating your own API!"/>
         </StackPanel>
         
 </UserControl>
@@ -898,16 +873,15 @@ EditApiDetailsView.axaml
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="QuickEndpoint.Views.EditApiDetailsView"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
              xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
              x:CompileBindings="True">
 
-    <UserControl.DataContext>
-        <vm:EditApiDetailsViewModel/>
-    </UserControl.DataContext>
-
     <DockPanel LastChildFill="True">
         <!-- Left Sidebar for Navigation -->
-        <ListBox DockPanel.Dock="Left" Width="200" ItemsSource="{Binding AvailableEndpoints}" SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsViewModel">
+        <ListBox DockPanel.Dock="Left" Width="200" ItemsSource="{Binding AvailableEndpoints}"
+                 SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsViewModel">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding}" />
@@ -915,18 +889,13 @@ EditApiDetailsView.axaml
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <!-- Main Content Area with Full-Screen Span -->
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/> <!-- Content Area -->
-                <ColumnDefinition Width="Auto"/> <!-- Right Upper Corner for API Name -->
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Grid.Column="1" Text="{Binding ApiName}" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10" FontSize="16" FontWeight="Bold" x:DataType="vm:EditApiDetailsViewModel"/>
-
-            <!-- Placeholder for Main Content or Other Details -->
-            <!-- Depending on content, you may need additional layout controls here -->
-        </Grid>
+        <!-- Right upper corner for API Name and other details -->
+        <StackPanel HorizontalAlignment="Stretch">
+            <TextBlock Text="{Binding ApiName}" HorizontalAlignment="Right" Margin="10" 
+                       VerticalAlignment="Top" FontSize="16" FontWeight="Bold"
+                       x:DataType="vm:EditApiDetailsViewModel"/>
+            <!-- Other content goes here -->
+        </StackPanel>
     </DockPanel>
 </UserControl>
 
@@ -961,72 +930,59 @@ EditApiView.axaml
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="QuickEndpoint.Views.EditApiView"
              xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
     
     <UserControl.DataContext>
         <vm:EditApiViewModel/>
     </UserControl.DataContext>
 
     <UserControl.Styles>
-            <Style Selector="TextBlock.H1">
+        <Style Selector="TextBlock.H1">
             <Setter Property="FontSize" Value="24"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,10"/>
-            </Style>
-            <Style Selector="TextBlock.H2">
+        </Style>
+        <Style Selector="TextBlock.H2">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,10"/>
-            </Style>
+        </Style>
     </UserControl.Styles>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Tytuł "Edit API" -->
-            <RowDefinition Height="Auto"/> <!-- ComboBox -->
-            <RowDefinition Height="Auto"/> <!-- Przycisk odświeżania -->
-            <RowDefinition Height="Auto"/> <!-- Przycisk edycji -->
-        </Grid.RowDefinitions>
+    <!-- Outer Grid to Center the Content Vertically -->
+    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Border VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Title "Edit API" -->
+                    <RowDefinition Height="Auto"/> <!-- ComboBox -->
+                    <RowDefinition Height="Auto"/> <!-- Buttons Panel -->
+                </Grid.RowDefinitions>
 
-        <!-- Tytuł "Edit API" -->
-        <TextBlock Grid.Row="0"
-                   Classes="H1"  
-                   Text="Edit API"
-                   Margin="10"
-                   FontSize="20"
-                   HorizontalAlignment="Center"/>
+                <!-- Title "Edit API" -->
+                <TextBlock Grid.Row="0" Classes="H1" Text="Edit API" Margin="10" />
 
-        <!-- ComboBox -->
-        <ComboBox Grid.Row="1"
-                Name="Select"
-                Margin="10"
-                HorizontalAlignment="Center"
-                ItemsSource="{Binding AvailableApis}"
-                x:DataType="vm:EditApiViewModel"
-                SelectedItem="{Binding ApiName}"
-                Width="290"
-                Classes="H1">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding}"/>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+                <!-- ComboBox -->
+                <ComboBox Grid.Row="1" Name="Select" Margin="10" HorizontalAlignment="Center" 
+                          ItemsSource="{Binding AvailableApis}" SelectedItem="{Binding ApiName}" x:DataType="vm:EditApiViewModel"  
+                          Width="290" Classes="H1">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="Edit Selected API"
-                    Classes="H2"
-                    x:DataType="vm:EditApiViewModel"
-                    Command="{Binding EditApiCommand}"
-                    Margin="10"/>
-            <Button Content="Refresh API List"
-                    Classes="H2"
-                    x:DataType="vm:EditApiViewModel"
-                    Command="{Binding RefreshApiListCommand}"
-                    Margin="10"/>
-        </StackPanel>
-
+                <!-- Buttons Panel -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Edit Selected API" Classes="H2" Command="{Binding EditApiCommand}" Margin="10" x:DataType="vm:EditApiViewModel"/>
+                    <Button Content="Refresh API List" Classes="H2" Command="{Binding RefreshApiListCommand}" Margin="10" x:DataType="vm:EditApiViewModel"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>
 
@@ -1082,8 +1038,8 @@ MainWindow.axaml
       <MenuItem Header="Settings" Command="{Binding OpenSettingsCommand}" x:DataType="vm:MainWindowViewModel"/>
     </Menu>
 
-    <Grid DockPanel.Dock="Right" HorizontalAlignment="Center" VerticalAlignment="Center">
-      <ContentControl Content="{Binding CurrentViewModel}" x:DataType="vm:MainWindowViewModel">
+    <Grid DockPanel.Dock="Right">
+      <ContentControl Content="{Binding CurrentViewModel}" x:DataType="vm:MainWindowViewModel" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
 
       </ContentControl>
     </Grid>
@@ -1177,85 +1133,87 @@ PublishApiView.axaml
              x:Class="QuickEndpoint.Views.PublishApiView"
              xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
              xmlns:c="clr-namespace:QuickEndpoint.Converters"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
+
 
     <UserControl.DataContext>
         <vm:PublishApiViewModel/>
     </UserControl.DataContext>
 
     <UserControl.Resources>
-    <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </UserControl.Resources>
 
     <UserControl.Styles>
-            <Style Selector="TextBlock.H1">
+        <Style Selector="TextBlock.H1">
             <Setter Property="FontSize" Value="24"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,10"/>
-            </Style>
-            <Style Selector="TextBlock.H2">
+        </Style>
+        <Style Selector="TextBlock.H2">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,10"/>
-            </Style>
+        </Style>
     </UserControl.Styles>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Tytuł "Edit API" -->
-            <RowDefinition Height="Auto"/> <!-- ComboBox -->
-            <RowDefinition Height="Auto"/> <!-- Przycisk odświeżania -->
-            <RowDefinition Height="Auto"/> <!-- Przycisk edycji -->
-        </Grid.RowDefinitions>
+<Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/> <!-- Title "Edit API" -->
+        <RowDefinition Height="Auto"/> <!-- ComboBox -->
+        <RowDefinition Height="Auto"/> <!-- Buttons Panel -->
+    </Grid.RowDefinitions>
 
-        <!-- Tytuł "Edit API" -->
-        <TextBlock Grid.Row="0"
-                   Classes="H1"  
-                   Text="Publish API"
-                   Margin="10"
-                   FontSize="20"
-                   HorizontalAlignment="Center"/>
+    <!-- Title "Edit API" -->
+    <TextBlock Grid.Row="0"
+               Classes="H1"  
+               Text="Publish API"
+               Margin="10"
+               FontSize="20"
+               HorizontalAlignment="Center"/>
 
-        <!-- ComboBox -->
-        <ComboBox Grid.Row="1"
-                Name="Select"
-                Margin="10"
-                HorizontalAlignment="Center"
-                ItemsSource="{Binding AvailableApis}"
+    <!-- ComboBox -->
+    <ComboBox Grid.Row="1"
+              Name="Select"
+              Margin="10"
+              HorizontalAlignment="Center"
+              ItemsSource="{Binding AvailableApis}"
+              x:DataType="vm:PublishApiViewModel"
+              SelectedItem="{Binding ApiName}"
+              Width="310"
+              Classes="H1">
+        <ComboBox.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding}"/>
+            </DataTemplate>
+        </ComboBox.ItemTemplate>
+    </ComboBox>
+
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+        <Button Content="Publish Selected API"
+                Classes="H2"
                 x:DataType="vm:PublishApiViewModel"
-                SelectedItem="{Binding ApiName}"
-                Width="310"
-                Classes="H1">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding}"/>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+                Command="{Binding PublishApiCommand}"
+                Margin="10"/>
+        <Button Content="Refresh API List"
+                Classes="H2"
+                x:DataType="vm:PublishApiViewModel"
+                Command="{Binding RefreshApiListCommand}"
+                Margin="10"/>
+    </StackPanel>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="Publish Selected API"
-                    Classes="H2"
-                    x:DataType="vm:PublishApiViewModel"
-                    Command="{Binding PublishApiCommand}"
-                    Margin="10"/>
-            <Button Content="Refresh API List"
-                    Classes="H2"
-                    x:DataType="vm:PublishApiViewModel"
-                    Command="{Binding RefreshApiListCommand}"
-                    Margin="10"/>
-        </StackPanel>
-
-        <ProgressBar Grid.Row="5"
+    <ProgressBar Grid.Row="5"
                  IsVisible="{Binding IsPublishingApi}"
                  x:DataType="vm:PublishApiViewModel"
                  Value="{Binding publishApiProgress, Mode=OneWay}"
                  Height="20"
                  Maximum="1"
                  Margin="0,25,0,0"/>
+</Grid>
 
-    </Grid>
 </UserControl>
 
 
