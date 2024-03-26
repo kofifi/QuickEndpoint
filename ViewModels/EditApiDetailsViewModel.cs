@@ -18,20 +18,37 @@ public class Endpoint
     public string ApiName { get; set; } // Add this line
 }
 
+public class EndpointDisplay
+{
+    public string Name { get; set; }
+    public string Method { get; set; }
+    public string DisplayName => $"{Method} {Name}";
+}
+
 public class EditApiDetailsViewModel : ViewModelBase
 {
-    private AvaloniaList<string> _availableEndpoints;
-    private string _selectedEndpoint;
+    private AvaloniaList<EndpointDisplay> _availableEndpoints;
+    private EndpointDisplay _selectedEndpoint;
     private string _apiName;
     private const string EndpointsFilePath = "endpoints.json";
 
-    public AvaloniaList<string> AvailableEndpoints
+
+    private string _newEndpointMethod = "GET"; // Default value
+    public string NewEndpointMethod
+    {
+        get => _newEndpointMethod;
+        set => this.RaiseAndSetIfChanged(ref _newEndpointMethod, value);
+    }
+
+    public List<string> HttpMethods { get; } = new List<string> { "GET", "POST", "PUT", "DELETE", "PATCH" };
+
+    public AvaloniaList<EndpointDisplay> AvailableEndpoints
     {
         get => _availableEndpoints;
         set => this.RaiseAndSetIfChanged(ref _availableEndpoints, value);
     }
 
-    public string SelectedEndpoint
+    public EndpointDisplay SelectedEndpoint
     {
         get => _selectedEndpoint;
         set => this.RaiseAndSetIfChanged(ref _selectedEndpoint, value);
@@ -73,10 +90,10 @@ public class EditApiDetailsViewModel : ViewModelBase
     {
         RefreshApiListCommand = ReactiveCommand.CreateFromTask(RefreshApiListAsync);
         AddEndpointCommand = ReactiveCommand.CreateFromTask(AddEndpointAsync);
-        EditSelectedEndpointCommand = ReactiveCommand.CreateFromTask(EditSelectedEndpointAsync, this.WhenAnyValue(x => x.SelectedEndpoint, (selectedEndpoint) => !string.IsNullOrEmpty(selectedEndpoint)));
-        DeleteSelectedEndpointCommand = ReactiveCommand.CreateFromTask(DeleteSelectedEndpointAsync, this.WhenAnyValue(x => x.SelectedEndpoint, (selectedEndpoint) => !string.IsNullOrEmpty(selectedEndpoint)));
+        EditSelectedEndpointCommand = ReactiveCommand.CreateFromTask(EditSelectedEndpointAsync, this.WhenAnyValue((EditApiDetailsViewModel x) => x.SelectedEndpoint, (EndpointDisplay selectedEndpoint) => selectedEndpoint != null));
+        DeleteSelectedEndpointCommand = ReactiveCommand.CreateFromTask(DeleteSelectedEndpointAsync, this.WhenAnyValue((EditApiDetailsViewModel x) => x.SelectedEndpoint, (EndpointDisplay selectedEndpoint) => selectedEndpoint != null));
 
-        AvailableEndpoints = new AvaloniaList<string>();
+        AvailableEndpoints = new AvaloniaList<EndpointDisplay>();
 
         // Automatically refresh the list of endpoints when the ViewModel is created
         RefreshApiListAsync().ConfigureAwait(false);
@@ -89,17 +106,16 @@ private async Task RefreshApiListAsync()
     {
         var json = await File.ReadAllTextAsync(EndpointsFilePath);
         var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json) ?? new List<Endpoint>();
-        
-        // Filter the endpoints list to only include those belonging to the selected API.
+
         var filteredEndpoints = endpoints
             .Where(endpoint => endpoint.ApiName == ApiName)
-            .Select(endpoint => endpoint.Name)
+            .Select(endpoint => new EndpointDisplay { Name = endpoint.Name, Method = endpoint.Method })
             .ToList();
-        
+
         AvailableEndpoints.Clear();
-        foreach (var endpointName in filteredEndpoints)
+        foreach (var endpoint in filteredEndpoints)
         {
-            AvailableEndpoints.Add(endpointName);
+            AvailableEndpoints.Add(endpoint);
         }
     }
     else
@@ -111,7 +127,7 @@ private async Task RefreshApiListAsync()
 private async Task AddEndpointAsync()
 {
     string apiDirectoryPath = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", ApiName);
-    
+
     if (string.IsNullOrWhiteSpace(NewEndpointName))
     {
         ErrorMessage = "The name of the new endpoint is required.";
@@ -139,13 +155,13 @@ private async Task AddEndpointAsync()
 
     ErrorMessage = "";
 
-    // Create a new endpoint object, including the ApiName.
+    // Create a new endpoint object.
     var newEndpoint = new Endpoint
     {
         Name = NewEndpointName,
-        Method = "GET", // Default method, this can be made dynamic as well.
-        Path = "sample", // Default path, consider allowing user input for this too.
-        ApiName = ApiName // Assign the API name to the endpoint.
+        Method = NewEndpointMethod, // Use the selected HTTP method.
+        Path = "sample", // Consider allowing user input for this.
+        ApiName = ApiName
     };
 
     // Add the new endpoint to the list and update the JSON file.
@@ -153,9 +169,28 @@ private async Task AddEndpointAsync()
     await File.WriteAllTextAsync(EndpointsFilePath, JsonConvert.SerializeObject(endpoints, Formatting.Indented));
 
     // Update the UI to reflect the new endpoint.
-    AvailableEndpoints.Add(newEndpoint.Name);
+    AvailableEndpoints.Add(new EndpointDisplay { Name = newEndpoint.Name, Method = newEndpoint.Method });
 
-    // Generate the controller code for the new endpoint.
+    // Determine the correct HTTP method attribute and action method
+    string httpMethodAttribute = newEndpoint.Method switch
+    {
+        "POST" => "[HttpPost]",
+        "PUT" => "[HttpPut]",
+        "DELETE" => "[HttpDelete]",
+        "PATCH" => "[HttpPatch]",
+        _ => "[HttpGet]"
+    };
+
+    string actionMethod = newEndpoint.Method switch
+    {
+        "POST" => "Post",
+        "PUT" => "Put",
+        "DELETE" => "Delete",
+        "PATCH" => "Patch",
+        _ => "Get"
+    };
+
+    // Generate the controller code dynamically
     string controllerCode = $@"
 using Microsoft.AspNetCore.Mvc;
 
@@ -165,9 +200,9 @@ namespace {ApiName}.Controllers
     [Route(""[controller]"")]
     public class {newEndpoint.Name}Controller : ControllerBase
     {{
-        [HttpGet]
+        {httpMethodAttribute}
         [Route(""{newEndpoint.Path}"")]
-        public IActionResult Get()
+        public IActionResult {actionMethod}()
         {{
             // Placeholder for the actual logic to be executed when the endpoint is called.
             return Ok(""{newEndpoint.Name} response"");
@@ -194,7 +229,7 @@ namespace {ApiName}.Controllers
             endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json);
         }
 
-        var endpointToEdit = endpoints.Find(e => e.Name == SelectedEndpoint);
+        var endpointToEdit = endpoints.FirstOrDefault(e => e.Name == SelectedEndpoint.Name && e.ApiName == ApiName);
         if (endpointToEdit != null)
         {
             // Te wartości powinny być aktualizowane na podstawie danych z interfejsu użytkownika
@@ -209,44 +244,45 @@ namespace {ApiName}.Controllers
 
     private async Task DeleteSelectedEndpointAsync()
     {
-        var endpoints = new List<Endpoint>();
-        if (File.Exists(EndpointsFilePath))
-        {
-            var json = await File.ReadAllTextAsync(EndpointsFilePath);
-            endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json);
-        }
+       if (File.Exists(EndpointsFilePath) && SelectedEndpoint != null)
+    {
+        var json = await File.ReadAllTextAsync(EndpointsFilePath);
+        var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json);
 
-        var endpointToDelete = endpoints.Find(e => e.Name == SelectedEndpoint);
+        var endpointToDelete = endpoints.FirstOrDefault(e => e.Name == SelectedEndpoint.Name && e.Method == SelectedEndpoint.Method);
         if (endpointToDelete != null)
         {
-            // Attempt to delete the controller file
-            try
             {
-                string apiDirectoryPath = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", ApiName);
-                string controllersDirectory = Path.Combine(apiDirectoryPath, "Controllers");
-                string controllerFileName = $"{endpointToDelete.Name}Controller.cs";
-                string controllerFilePath = Path.Combine(controllersDirectory, controllerFileName);
-
-                if (File.Exists(controllerFilePath))
+                try
                 {
-                    File.Delete(controllerFilePath); // Delete the controller file
-                }
-            }
-            catch (Exception ex)
-            {
-                // Handle or log the error (e.g., insufficient permissions, file in use)
-                // For simplicity, we're just printing the exception message to the console.
-                // In a real application, consider logging this error or notifying the user.
-                Console.WriteLine($"Error deleting controller file: {ex.Message}");
-                return; // Optional: decide whether to stop the operation if the file cannot be deleted.
-            }
+                    string apiDirectoryPath = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", ApiName);
+                    string controllersDirectory = Path.Combine(apiDirectoryPath, "Controllers");
 
-            // Remove the endpoint from the list and update the JSON file
-            endpoints.Remove(endpointToDelete);
-            await File.WriteAllTextAsync(EndpointsFilePath, JsonConvert.SerializeObject(endpoints, Formatting.Indented));
-            
-            // Refresh the list of available endpoints in the UI
-            await RefreshApiListAsync();
+                    // Construct the controller file name based on endpoint name and possibly method
+                    string controllerFileName = $"{endpointToDelete.Name}Controller.cs";
+                    string controllerFilePath = Path.Combine(controllersDirectory, controllerFileName);
+
+                    if (File.Exists(controllerFilePath))
+                    {
+                        File.Delete(controllerFilePath); // Delete the controller file
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error deleting controller file: {ex.Message}");
+                    ErrorMessage = "Error deleting controller file. Please check logs for more details.";
+                    return;
+                }
+
+                // Remove the endpoint from the list and update the JSON file
+                endpoints.Remove(endpointToDelete);
+                var updatedJson = JsonConvert.SerializeObject(endpoints, Formatting.Indented);
+                await File.WriteAllTextAsync(EndpointsFilePath, updatedJson);
+                
+                // Refresh the list of available endpoints in the UI
+                await RefreshApiListAsync();
+            }
         }
     }
+}
 }

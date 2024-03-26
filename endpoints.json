@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "Name": "Test",
+    "Method": "POST",
+    "Path": "/updated/endpoint",
+    "ApiName": "_hardCoded"
+  },
+  {
+    "Name": "Testowee",
+    "Method": "GET",
+    "Path": "sample",
+    "ApiName": "Testowe"
+  },
+  {
+    "Name": "Testtt",
+    "Method": "DELETE",
+    "Path": "sample",
+    "ApiName": "Testowe"
+  }
+]
