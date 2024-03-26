@@ -6,15 +6,9 @@
     "ApiName": "_hardCoded"
   },
   {
-    "Name": "Testowee",
-    "Method": "GET",
-    "Path": "sample",
-    "ApiName": "Testowe"
-  },
-  {
-    "Name": "Testtt",
-    "Method": "DELETE",
-    "Path": "sample",
+    "Name": "fawf",
+    "Method": "PUT",
+    "Path": "fawfwa",
     "ApiName": "Testowe"
   }
 ]

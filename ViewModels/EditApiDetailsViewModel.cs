@@ -22,8 +22,12 @@ public class EndpointDisplay
 {
     public string Name { get; set; }
     public string Method { get; set; }
-    public string DisplayName => $"{Method} {Name}";
+    public string Path { get; set; } // Add this line
+    public string DisplayName => $"{Method} {Name} {Path}";
 }
+
+
+
 
 public class EditApiDetailsViewModel : ViewModelBase
 {
@@ -32,6 +36,12 @@ public class EditApiDetailsViewModel : ViewModelBase
     private string _apiName;
     private const string EndpointsFilePath = "endpoints.json";
 
+    private string _newEndpointPath;
+    public string NewEndpointPath
+    {
+        get => _newEndpointPath;
+        set => this.RaiseAndSetIfChanged(ref _newEndpointPath, value);
+    }
 
     private string _newEndpointMethod = "GET"; // Default value
     public string NewEndpointMethod
@@ -108,9 +118,15 @@ private async Task RefreshApiListAsync()
         var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json) ?? new List<Endpoint>();
 
         var filteredEndpoints = endpoints
-            .Where(endpoint => endpoint.ApiName == ApiName)
-            .Select(endpoint => new EndpointDisplay { Name = endpoint.Name, Method = endpoint.Method })
-            .ToList();
+        .Where(endpoint => endpoint.ApiName == ApiName)
+        .Select(endpoint => new EndpointDisplay 
+        { 
+            Name = endpoint.Name, 
+            Method = endpoint.Method,
+            Path = endpoint.Path // Ensure this line is added
+        })
+        .ToList();
+
 
         AvailableEndpoints.Clear();
         foreach (var endpoint in filteredEndpoints)
@@ -128,13 +144,12 @@ private async Task AddEndpointAsync()
 {
     string apiDirectoryPath = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", ApiName);
 
-    if (string.IsNullOrWhiteSpace(NewEndpointName))
+    if (string.IsNullOrWhiteSpace(NewEndpointName) || string.IsNullOrWhiteSpace(NewEndpointPath))
     {
-        ErrorMessage = "The name of the new endpoint is required.";
+        ErrorMessage = "Both the name and path of the new endpoint are required.";
         return;
     }
 
-    // Load existing endpoints from the JSON file.
     List<Endpoint> endpoints;
     if (File.Exists(EndpointsFilePath))
     {
@@ -146,7 +161,6 @@ private async Task AddEndpointAsync()
         endpoints = new List<Endpoint>();
     }
 
-    // Check if an endpoint with the same name already exists within the same API.
     if (endpoints.Any(ep => ep.Name.Equals(NewEndpointName, StringComparison.OrdinalIgnoreCase) && ep.ApiName == ApiName))
     {
         ErrorMessage = "An endpoint with this name already exists within the API. Please use a different name.";
@@ -155,23 +169,19 @@ private async Task AddEndpointAsync()
 
     ErrorMessage = "";
 
-    // Create a new endpoint object.
     var newEndpoint = new Endpoint
     {
         Name = NewEndpointName,
-        Method = NewEndpointMethod, // Use the selected HTTP method.
-        Path = "sample", // Consider allowing user input for this.
+        Method = NewEndpointMethod,
+        Path = NewEndpointPath, // Use the inputted path.
         ApiName = ApiName
     };
 
-    // Add the new endpoint to the list and update the JSON file.
     endpoints.Add(newEndpoint);
     await File.WriteAllTextAsync(EndpointsFilePath, JsonConvert.SerializeObject(endpoints, Formatting.Indented));
 
-    // Update the UI to reflect the new endpoint.
-    AvailableEndpoints.Add(new EndpointDisplay { Name = newEndpoint.Name, Method = newEndpoint.Method });
+    AvailableEndpoints.Add(new EndpointDisplay { Name = newEndpoint.Name, Method = newEndpoint.Method, Path = newEndpoint.Path });
 
-    // Determine the correct HTTP method attribute and action method
     string httpMethodAttribute = newEndpoint.Method switch
     {
         "POST" => "[HttpPost]",
@@ -190,7 +200,6 @@ private async Task AddEndpointAsync()
         _ => "Get"
     };
 
-    // Generate the controller code dynamically
     string controllerCode = $@"
 using Microsoft.AspNetCore.Mvc;
 
@@ -204,19 +213,19 @@ namespace {ApiName}.Controllers
         [Route(""{newEndpoint.Path}"")]
         public IActionResult {actionMethod}()
         {{
-            // Placeholder for the actual logic to be executed when the endpoint is called.
             return Ok(""{newEndpoint.Name} response"");
         }}
     }}
 }}";
 
-    // Ensure the Controllers directory exists and write the new controller file.
     string controllersDirectory = Path.Combine(apiDirectoryPath, "Controllers");
     Directory.CreateDirectory(controllersDirectory);
     string controllerFilePath = Path.Combine(controllersDirectory, $"{newEndpoint.Name}Controller.cs");
     await File.WriteAllTextAsync(controllerFilePath, controllerCode);
 
-    NewEndpointName = string.Empty; // Clear the input field after adding the endpoint.
+    // Clear the input fields after adding the endpoint, including the new path input.
+    NewEndpointName = string.Empty;
+    NewEndpointPath = string.Empty;
 }
 
 
