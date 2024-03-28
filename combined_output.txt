@@ -64,88 +64,122 @@ public class CreateApiViewModel : ViewModelBase
         // Other initializations...
     }
 
-    private async Task CreateApiAsync()
+private async Task CreateApiAsync()
+{
+    IsCreatingApi = true;
+    CreateApiProgress = 0.0;
+    LogDebugInfo("Starting API creation process.");
+
+    try
     {
-        IsCreatingApi = true;
-        CreateApiProgress = 0.0; // Start progress at 0%
-        LogDebugInfo("CreateApi method execution started.");
+        await InitializeSetupAsync();
 
-        try
-        {
-            // Simulate initial setup work
-            await Task.Delay(500); // Simulate some initial work
-            CreateApiProgress = 0.1; // Update progress to 10%
-            LogDebugInfo("Initial setup completed.");
+        // Setup directories
+        var projectDirectory = await SetupProjectDirectoryAsync();
+        if (string.IsNullOrEmpty(projectDirectory)) return;
 
-            // Directory and project setup
-            string baseDirectory = Environment.CurrentDirectory;
-            string apisDirectory = Path.Combine(baseDirectory, "Data", "CreatedApis");
-            if (!Directory.Exists(apisDirectory))
-            {
-                Directory.CreateDirectory(apisDirectory);
-            }
-            string projectDirectory = Path.Combine(apisDirectory, NameOfApi);
-            if (Directory.Exists(projectDirectory))
-            {
-                ErrorMessage = "API with this name already exists.";
-                return; // Wyjdź z metody, nie kontynuując tworzenia API
-            }
-            else
-            {
-                ErrorMessage = ""; // Wyczyść komunikat o błędzie, jeśli katalog nie istnieje
-            }
-            Directory.CreateDirectory(projectDirectory);
-            LogDebugInfo("Project directory setup completed.");
-            await Task.Delay(500); // Simulate time taken for directory setup
-            CreateApiProgress = 0.3; // Update progress to 30%
+        await CreateProjectAsync(projectDirectory);
+        await OverwriteProgramFileAsync(projectDirectory);
+        await CreateProjectStructureAsync(projectDirectory);
 
-            // Process start and execution
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = "new webapp",
-                WorkingDirectory = projectDirectory,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using (var process = new Process { StartInfo = startInfo })
-            {
-                process.Start();
-                LogDebugInfo("dotnet process started.");
-                while (!process.HasExited)
-                {
-                    await Task.Delay(1000); // Wait a bit before updating the progress
-                    CreateApiProgress = Math.Min(CreateApiProgress + 0.2, 0.9); // Ensure progress does not exceed 90%
-                }
-                string output = await process.StandardOutput.ReadToEndAsync();
-                string error = await process.StandardError.ReadToEndAsync();
-                if (!string.IsNullOrEmpty(output))
-                {
-                    File.WriteAllText(Path.Combine(projectDirectory, "api_creation_output.txt"), output);
-                }
-                if (!string.IsNullOrEmpty(error))
-                {
-                    LogDebugInfo($"dotnet process error: {error}");
-                }
-            }
-
-            await Task.Delay(500); // Finalize everything
-            CreateApiProgress = 1.0; // Ensure progress is set to 100% after completion
-            await Task.Delay(500); // Finalize everything
-            LogDebugInfo("API creation process completed.");
-        }
-        catch (Exception ex)
-        {
-            LogDebugInfo($"An error occurred: {ex.Message}");
-        }
-        finally
-        {
-            IsCreatingApi = false;
-        }
+        LogDebugInfo("API creation process completed successfully.");
     }
+    catch (Exception ex)
+    {
+        LogDebugInfo($"An error occurred during API creation: {ex.Message}");
+        ErrorMessage = "An error occurred. Please check the log for details.";
+    }
+    finally
+    {
+        IsCreatingApi = false;
+        CreateApiProgress = 1.0; // Ensure completion regardless of success.
+    }
+}
+
+private async Task OverwriteProgramFileAsync(string projectDirectory)
+{
+    string programCsPath = Path.Combine(projectDirectory, "Program.cs");
+    string programCsContent = @"
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+app.UseHttpsRedirection();
+app.MapControllers();
+
+app.Run();
+";
+
+    await File.WriteAllTextAsync(programCsPath, programCsContent);
+    LogDebugInfo($"Program.cs file overwritten with custom content.");
+    CreateApiProgress = 0.6; // Update progress.
+}
+
+private async Task<string> SetupProjectDirectoryAsync()
+{
+    string baseDirectory = Environment.CurrentDirectory;
+    string apisDirectory = Path.Combine(baseDirectory, "Data", "CreatedApis");
+
+    Directory.CreateDirectory(apisDirectory); // Ensure the base directory exists.
+
+    string projectDirectory = Path.Combine(apisDirectory, NameOfApi);
+    if (Directory.Exists(projectDirectory))
+    {
+        ErrorMessage = "API with this name already exists.";
+        return null;
+    }
+
+    Directory.CreateDirectory(projectDirectory);
+    LogDebugInfo("Project directory setup completed.");
+    await Task.Delay(500); // Simulate directory setup time.
+    CreateApiProgress = 0.2;
+
+    return projectDirectory;
+}
+
+private async Task CreateProjectAsync(string projectDirectory)
+{
+    var startInfo = new ProcessStartInfo
+    {
+        FileName = "dotnet",
+        Arguments = "new webapi --no-https",
+        WorkingDirectory = projectDirectory,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        UseShellExecute = false,
+        CreateNoWindow = true
+    };
+
+    using (var process = new Process { StartInfo = startInfo })
+    {
+        process.Start();
+        await process.WaitForExitAsync();
+        CreateApiProgress = 0.5;
+        LogDebugInfo("dotnet new webapi process completed.");
+    }
+}
+
+private async Task CreateProjectStructureAsync(string projectDirectory)
+{
+    string[] directories = { "Controllers", "Models", "Services", "Repositories" };
+    foreach (var dir in directories)
+    {
+        Directory.CreateDirectory(Path.Combine(projectDirectory, dir));
+    }
+    LogDebugInfo("Project structure created.");
+    await Task.Delay(500); // Simulate structure setup time.
+    CreateApiProgress = 0.7;
+}
+
+private async Task InitializeSetupAsync()
+{
+    await Task.Delay(500); // Simulate initial setup work.
+    LogDebugInfo("Initial setup completed.");
+    CreateApiProgress = 0.1;
+}
+
 
     private void LogDebugInfo(string message)
     {
@@ -175,64 +209,535 @@ namespace QuickEndpoint.ViewModels;
     }
 
 
-EditApiDetailsViewModel.cs
+EditApiDetailsPathsViewModel.cs
 
+using System.Linq; // Add this line at the top of your file
 using ReactiveUI;
 using Avalonia.Collections;
 using System.Reactive;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System;
+
 
 namespace QuickEndpoint.ViewModels;
-    public class EditApiDetailsViewModel : ViewModelBase
+
+public class Endpoint
+{
+    public string Name { get; set; }
+    public string Method { get; set; }
+    public string Path { get; set; }
+    public string ApiName { get; set; } // Add this line
+}
+
+public class EndpointDisplay
+{
+    public string Name { get; set; }
+    public string Method { get; set; }
+    public string Path { get; set; } // Add this line
+    public string DisplayName => $"{Method} {Name} {Path}";
+}
+public class EditApiDetailsPathsViewModel : ViewModelBase
+{
+    private AvaloniaList<EndpointDisplay> _availableEndpoints;
+    private EndpointDisplay _selectedEndpoint;
+    private string _apiName;
+    private const string EndpointsFilePath = "endpoints.json";
+
+    private string _newEndpointPath;
+    public string NewEndpointPath
     {
-        private AvaloniaList<string> _availableEndpoints;
-        private string _selectedEndpoint;
-
-            private string _apiName;
-
-        public string ApiName
-        {
-            get => _apiName;
-            set => this.RaiseAndSetIfChanged(ref _apiName, value);
-        }
-
-        public EditApiDetailsViewModel()
-        {
-            // Initialize commands
-            RefreshApiListCommand = ReactiveCommand.Create(RefreshApiList);
-
-            // Placeholder data for AvailableEndpoints
-            AvailableEndpoints = new AvaloniaList<string> { "Endpoint 1", "Endpoint 2", "Endpoint 3" };
-
-            // Initialize other properties if necessary
-        }
-
-        public AvaloniaList<string> AvailableEndpoints
-        {
-            get => _availableEndpoints;
-            set => this.RaiseAndSetIfChanged(ref _availableEndpoints, value);
-        }
-
-        public string SelectedEndpoint
-        {
-            get => _selectedEndpoint;
-            set => this.RaiseAndSetIfChanged(ref _selectedEndpoint, value);
-        }
-
-        public ReactiveCommand<Unit, Unit> RefreshApiListCommand { get; }
-
-        private void RefreshApiList()
-        {
-            // Simulate refreshing the list of endpoints. In a real application, this might involve fetching data from a database or an API.
-            AvailableEndpoints.Clear();
-            AvailableEndpoints.Add("Updated Endpoint 1");
-            AvailableEndpoints.Add("Updated Endpoint 2");
-            AvailableEndpoints.Add("Updated Endpoint 3");
-
-            // Optionally, reset the selected endpoint or handle as needed.
-        }
-
-        // Include additional functionality as necessary, such as commands for editing specific endpoints, adding new ones, etc.
+        get => _newEndpointPath;
+        set => this.RaiseAndSetIfChanged(ref _newEndpointPath, value);
     }
+
+    private string _newEndpointMethod = "GET"; // Default value
+    public string NewEndpointMethod
+    {
+        get => _newEndpointMethod;
+        set => this.RaiseAndSetIfChanged(ref _newEndpointMethod, value);
+    }
+
+    public List<string> HttpMethods { get; } = new List<string> { "GET", "POST", "PUT", "DELETE", "PATCH" };
+
+    public AvaloniaList<EndpointDisplay> AvailableEndpoints
+    {
+        get => _availableEndpoints;
+        set => this.RaiseAndSetIfChanged(ref _availableEndpoints, value);
+    }
+
+    public EndpointDisplay SelectedEndpoint
+    {
+        get => _selectedEndpoint;
+        set => this.RaiseAndSetIfChanged(ref _selectedEndpoint, value);
+    }
+
+    public string ApiName
+    {
+        get => _apiName;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _apiName, value);
+            RefreshApiListAsync().ConfigureAwait(false);
+        }
+    }
+
+    private string _newEndpointName;
+    public string NewEndpointName
+    {
+        get => _newEndpointName;
+        set => this.RaiseAndSetIfChanged(ref _newEndpointName, value);
+    }
+
+    private string _errorMessage;
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
+    }
+
+
+
+    public ReactiveCommand<Unit, Unit> RefreshApiListCommand { get; private set; }
+    public ReactiveCommand<Unit, Unit> AddEndpointCommand { get; private set; }
+    public ReactiveCommand<Unit, Unit> EditSelectedEndpointCommand { get; private set; }
+    public ReactiveCommand<Unit, Unit> DeleteSelectedEndpointCommand { get; private set; }
+    
+
+    public EditApiDetailsPathsViewModel()
+    {
+        RefreshApiListCommand = ReactiveCommand.CreateFromTask(RefreshApiListAsync);
+        AddEndpointCommand = ReactiveCommand.CreateFromTask(AddEndpointAsync);
+        EditSelectedEndpointCommand = ReactiveCommand.CreateFromTask(EditSelectedEndpointAsync, this.WhenAnyValue((EditApiDetailsPathsViewModel x) => x.SelectedEndpoint, (EndpointDisplay selectedEndpoint) => selectedEndpoint != null));
+        DeleteSelectedEndpointCommand = ReactiveCommand.CreateFromTask(DeleteSelectedEndpointAsync, this.WhenAnyValue((EditApiDetailsPathsViewModel x) => x.SelectedEndpoint, (EndpointDisplay selectedEndpoint) => selectedEndpoint != null));
+
+        AvailableEndpoints = new AvaloniaList<EndpointDisplay>();
+
+        // Automatically refresh the list of endpoints when the ViewModel is created
+        RefreshApiListAsync().ConfigureAwait(false);
+    }
+
+
+private async Task RefreshApiListAsync()
+{
+    if (File.Exists(EndpointsFilePath))
+    {
+        var json = await File.ReadAllTextAsync(EndpointsFilePath);
+        var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json) ?? new List<Endpoint>();
+
+        var filteredEndpoints = endpoints
+        .Where(endpoint => endpoint.ApiName == ApiName)
+        .Select(endpoint => new EndpointDisplay 
+        { 
+            Name = endpoint.Name, 
+            Method = endpoint.Method,
+            Path = endpoint.Path // Ensure this line is added
+        })
+        .ToList();
+
+
+        AvailableEndpoints.Clear();
+        foreach (var endpoint in filteredEndpoints)
+        {
+            AvailableEndpoints.Add(endpoint);
+        }
+    }
+    else
+    {
+        AvailableEndpoints.Clear();
+    }
+}
+
+private async Task AddEndpointAsync()
+{
+    string apiDirectoryPath = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", ApiName);
+
+    if (string.IsNullOrWhiteSpace(NewEndpointName) || string.IsNullOrWhiteSpace(NewEndpointPath))
+    {
+        ErrorMessage = "Both the name and path of the new endpoint are required.";
+        return;
+    }
+
+    List<Endpoint> endpoints;
+    if (File.Exists(EndpointsFilePath))
+    {
+        var json = await File.ReadAllTextAsync(EndpointsFilePath);
+        endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json) ?? new List<Endpoint>();
+    }
+    else
+    {
+        endpoints = new List<Endpoint>();
+    }
+
+    if (endpoints.Any(ep => ep.Name.Equals(NewEndpointName, StringComparison.OrdinalIgnoreCase) && ep.ApiName == ApiName))
+    {
+        ErrorMessage = "An endpoint with this name already exists within the API. Please use a different name.";
+        return;
+    }
+
+    ErrorMessage = "";
+
+    var newEndpoint = new Endpoint
+    {
+        Name = NewEndpointName,
+        Method = NewEndpointMethod,
+        Path = NewEndpointPath, // Use the inputted path.
+        ApiName = ApiName
+    };
+
+    endpoints.Add(newEndpoint);
+    await File.WriteAllTextAsync(EndpointsFilePath, JsonConvert.SerializeObject(endpoints, Formatting.Indented));
+
+    AvailableEndpoints.Add(new EndpointDisplay { Name = newEndpoint.Name, Method = newEndpoint.Method, Path = newEndpoint.Path });
+
+    string httpMethodAttribute = newEndpoint.Method switch
+    {
+        "POST" => "[HttpPost]",
+        "PUT" => "[HttpPut]",
+        "DELETE" => "[HttpDelete]",
+        "PATCH" => "[HttpPatch]",
+        _ => "[HttpGet]"
+    };
+
+    string actionMethod = newEndpoint.Method switch
+    {
+        "POST" => "Post",
+        "PUT" => "Put",
+        "DELETE" => "Delete",
+        "PATCH" => "Patch",
+        _ => "Get"
+    };
+
+    string controllerCode = $@"
+using Microsoft.AspNetCore.Mvc;
+
+namespace {ApiName}.Controllers
+{{
+    [ApiController]
+    [Route(""[controller]"")]
+    public class {newEndpoint.Name}Controller : ControllerBase
+    {{
+        {httpMethodAttribute}
+        [Route(""{newEndpoint.Path}"")]
+        public IActionResult {actionMethod}()
+        {{
+            return Ok(""{newEndpoint.Name} response"");
+        }}
+    }}
+}}";
+
+    string controllersDirectory = Path.Combine(apiDirectoryPath, "Controllers");
+    Directory.CreateDirectory(controllersDirectory);
+    string controllerFilePath = Path.Combine(controllersDirectory, $"{newEndpoint.Name}Controller.cs");
+    await File.WriteAllTextAsync(controllerFilePath, controllerCode);
+
+    // Clear the input fields after adding the endpoint, including the new path input.
+    NewEndpointName = string.Empty;
+    NewEndpointPath = string.Empty;
+}
+
+
+    private async Task EditSelectedEndpointAsync()
+    {
+        var endpoints = new List<Endpoint>();
+        if (File.Exists(EndpointsFilePath))
+        {
+            var json = await File.ReadAllTextAsync(EndpointsFilePath);
+            endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json);
+        }
+
+        var endpointToEdit = endpoints.FirstOrDefault(e => e.Name == SelectedEndpoint.Name && e.ApiName == ApiName);
+        if (endpointToEdit != null)
+        {
+            // Te wartości powinny być aktualizowane na podstawie danych z interfejsu użytkownika
+            endpointToEdit.Method = "POST";
+            endpointToEdit.Path = "/updated/endpoint";
+
+            await File.WriteAllTextAsync(EndpointsFilePath, JsonConvert.SerializeObject(endpoints, Formatting.Indented));
+            await RefreshApiListAsync();
+        }
+    }
+
+
+    private async Task DeleteSelectedEndpointAsync()
+    {
+       if (File.Exists(EndpointsFilePath) && SelectedEndpoint != null)
+    {
+        var json = await File.ReadAllTextAsync(EndpointsFilePath);
+        var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json);
+
+        var endpointToDelete = endpoints.FirstOrDefault(e => e.Name == SelectedEndpoint.Name && e.Method == SelectedEndpoint.Method);
+        if (endpointToDelete != null)
+        {
+            {
+                try
+                {
+                    string apiDirectoryPath = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", ApiName);
+                    string controllersDirectory = Path.Combine(apiDirectoryPath, "Controllers");
+
+                    // Construct the controller file name based on endpoint name and possibly method
+                    string controllerFileName = $"{endpointToDelete.Name}Controller.cs";
+                    string controllerFilePath = Path.Combine(controllersDirectory, controllerFileName);
+
+                    if (File.Exists(controllerFilePath))
+                    {
+                        File.Delete(controllerFilePath); // Delete the controller file
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error deleting controller file: {ex.Message}");
+                    ErrorMessage = "Error deleting controller file. Please check logs for more details.";
+                    return;
+                }
+
+                // Remove the endpoint from the list and update the JSON file
+                endpoints.Remove(endpointToDelete);
+                var updatedJson = JsonConvert.SerializeObject(endpoints, Formatting.Indented);
+                await File.WriteAllTextAsync(EndpointsFilePath, updatedJson);
+                
+                // Refresh the list of available endpoints in the UI
+                await RefreshApiListAsync();
+            }
+        }
+    }
+}
+}
+
+EditApiDetailsViewModel.cs
+
+using System.Linq;
+using ReactiveUI;
+using Avalonia.Collections;
+using System.Reactive;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System;
+
+namespace QuickEndpoint.ViewModels;
+
+public class Origin // Renamed class
+{
+    public string Name { get; set; }
+    public string Method { get; set; }
+    public string Path { get; set; }
+    public string ApiName { get; set; }
+}
+
+public class OriginDisplay // Renamed class
+{
+    public string Name { get; set; }
+    public string Method { get; set; }
+    public string Path { get; set; }
+    public string DisplayName => $"{Method} {Name} {Path}";
+}
+
+
+public class EditApiDetailsViewModel : ViewModelBase
+{
+    private AvaloniaList<OriginDisplay> _availableOrigins; // Renamed variable
+    private OriginDisplay _selectedOrigin; // Renamed variable
+    private string _apiName;
+    private const string OriginsFilePath = "origins.json"; // Renamed constant
+
+    public AvaloniaList<OriginDisplay> AvailableOrigins // Renamed property
+    {
+        get => _availableOrigins;
+        set => this.RaiseAndSetIfChanged(ref _availableOrigins, value);
+    }
+
+    public OriginDisplay SelectedOrigin // Renamed property
+    {
+        get => _selectedOrigin;
+        set => this.RaiseAndSetIfChanged(ref _selectedOrigin, value);
+    }
+
+    public string ApiName
+    {
+        get => _apiName;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _apiName, value);
+            RefreshOriginListAsync().ConfigureAwait(false);
+        }
+    }
+
+    private string _newEndpointName;
+    public string NewEndpointName
+    {
+        get => _newEndpointName;
+        set => this.RaiseAndSetIfChanged(ref _newEndpointName, value);
+    }
+
+    private string _errorMessage;
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
+    }
+
+    public ReactiveCommand<Unit, Unit> RefreshOriginListCommand { get; private set; }
+    public ReactiveCommand<Unit, Unit> AddOriginCommand { get; private set; }
+    public ReactiveCommand<Unit, Unit> EditSelectedOriginCommand { get; private set; }
+    public ReactiveCommand<Unit, Unit> DeleteSelectedOriginCommand { get; private set; }
+
+    public EditApiDetailsViewModel()
+    {
+        RefreshOriginListCommand = ReactiveCommand.CreateFromTask(RefreshOriginListAsync);
+        AddOriginCommand = ReactiveCommand.CreateFromTask(AddOriginAsync);
+        EditSelectedOriginCommand = ReactiveCommand.CreateFromTask(EditSelectedOriginAsync, this.WhenAnyValue((EditApiDetailsViewModel x) => x.SelectedOrigin, (OriginDisplay selectedOrigin) => selectedOrigin != null));
+        DeleteSelectedOriginCommand = ReactiveCommand.CreateFromTask(DeleteSelectedOriginAsync, this.WhenAnyValue((EditApiDetailsViewModel x) => x.SelectedOrigin, (OriginDisplay selectedOrigin) => selectedOrigin != null));
+
+        AvailableOrigins = new AvaloniaList<OriginDisplay>(); // Adjusted variable usage
+        RefreshOriginListAsync().ConfigureAwait(false);
+    }
+
+
+private async Task RefreshOriginListAsync()
+{
+        if (File.Exists(OriginsFilePath)) // Adjusted for renamed file
+        {
+            var json = await File.ReadAllTextAsync(OriginsFilePath);
+            var origins = JsonConvert.DeserializeObject<List<Origin>>(json) ?? new List<Origin>();
+
+            var filteredOrigins = origins
+            .Where(origin => origin.ApiName == ApiName)
+            .Select(origin => new OriginDisplay // Adjusted class name
+            { 
+                Name = origin.Name
+            })
+            .ToList();
+
+            AvailableOrigins.Clear(); // Adjusted variable usage
+            foreach (var origin in filteredOrigins)
+            {
+                AvailableOrigins.Add(origin); // Adjusted variable usage
+            }
+        }
+        else
+        {
+            AvailableOrigins.Clear(); // Adjusted variable usage
+        }
+}
+
+private async Task AddOriginAsync()
+{
+    string apiDirectoryPath = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", ApiName);
+
+    // Check if the endpoint name is provided
+    if (string.IsNullOrWhiteSpace(NewEndpointName))
+    {
+        ErrorMessage = "The name of the new endpoint is required.";
+        return;
+    }
+
+    List<Endpoint> endpoints;
+    if (File.Exists(OriginsFilePath))
+    {
+        // Deserialize the existing endpoints from the file
+        var json = await File.ReadAllTextAsync(OriginsFilePath);
+        endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json) ?? new List<Endpoint>();
+    }
+    else
+    {
+        // Initialize a new list if no file exists
+        endpoints = new List<Endpoint>();
+    }
+
+    // Check if an endpoint with the same name already exists within the API
+    if (endpoints.Any(ep => ep.Name.Equals(NewEndpointName, StringComparison.OrdinalIgnoreCase) && ep.ApiName == ApiName))
+    {
+        ErrorMessage = "An endpoint with this name already exists within the API. Please use a different name.";
+        return;
+    }
+
+    // Clear the error message if all checks pass
+    ErrorMessage = "";
+
+    // Create a new endpoint instance
+    var newEndpoint = new Endpoint
+    {
+        Name = NewEndpointName,
+        ApiName = ApiName
+    };
+
+    // Add the new endpoint to the list
+    endpoints.Add(newEndpoint);
+
+    // Serialize the updated list of endpoints back to the JSON file
+    await File.WriteAllTextAsync(OriginsFilePath, JsonConvert.SerializeObject(endpoints, Formatting.Indented));
+
+    // Update the UI to reflect the new endpoint
+    AvailableOrigins.Add(new OriginDisplay { Name = newEndpoint.Name });
+
+    // Reset the input fields for the next addition
+    NewEndpointName = string.Empty;
+}
+
+
+    private async Task EditSelectedOriginAsync()
+    {
+        // Assuming you have a way to pass or set ApiName in EditApiDetailsPathsViewModel,
+        // otherwise just instantiate it directly.
+        var editApiDetailsPathsViewModel = new EditApiDetailsPathsViewModel
+        {
+            // Set properties as needed, for example:
+            ApiName = this.ApiName
+        };
+
+        // Update the current ViewModel in MainWindowViewModel
+        MainWindowViewModel.Current.CurrentViewModel = editApiDetailsPathsViewModel;
+    }
+
+
+    private async Task DeleteSelectedOriginAsync()
+    {
+       if (File.Exists(OriginsFilePath) && SelectedOrigin != null)
+    {
+        var json = await File.ReadAllTextAsync(OriginsFilePath);
+        var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(json);
+
+        var endpointToDelete = endpoints.FirstOrDefault(e => e.Name == SelectedOrigin.Name);
+        if (endpointToDelete != null)
+        {
+            {
+                try
+                {
+                    string apiDirectoryPath = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", ApiName);
+                    string controllersDirectory = Path.Combine(apiDirectoryPath, "Controllers");
+
+                    // Construct the controller file name based on endpoint name and possibly method
+                    string controllerFileName = $"{endpointToDelete.Name}Controller.cs";
+                    string controllerFilePath = Path.Combine(controllersDirectory, controllerFileName);
+
+                    if (File.Exists(controllerFilePath))
+                    {
+                        File.Delete(controllerFilePath); // Delete the controller file
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error deleting controller file: {ex.Message}");
+                    ErrorMessage = "Error deleting controller file. Please check logs for more details.";
+                    return;
+                }
+
+                // Remove the endpoint from the list and update the JSON file
+                endpoints.Remove(endpointToDelete);
+                var updatedJson = JsonConvert.SerializeObject(endpoints, Formatting.Indented);
+                await File.WriteAllTextAsync(OriginsFilePath, updatedJson);
+                
+                // Refresh the list of available endpoints in the UI
+                await RefreshOriginListAsync();
+            }
+        }
+    }
+}
+}
 
 EditApiViewModel.cs
 
@@ -868,6 +1373,107 @@ namespace QuickEndpoint.Views
 }
 
 
+EditApiDetailsPathsView.axaml
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QuickEndpoint.Views.EditApiDetailsPathsView"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             x:CompileBindings="True">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Dla tytułu "Endpoints of the API" -->
+            <RowDefinition Height="Auto"/> <!-- Dla nazwy API -->
+            <RowDefinition Height="Auto"/> <!-- Dla formularza dodawania nowego endpointa -->
+            <RowDefinition Height="*"/>    <!-- Dla listy endpointów -->
+            <RowDefinition Height="Auto"/> <!-- Dla przycisków akcji -->
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"/> <!-- Lewa kolumna dla formularza i przycisków -->
+            <ColumnDefinition Width="2"/>   <!-- Separator -->
+            <ColumnDefinition Width="*"/>   <!-- Prawa kolumna dla listy -->
+        </Grid.ColumnDefinitions>
+
+        <!-- Separator -->
+        <Border Grid.Row="0" Grid.RowSpan="5" Grid.Column="1" Background="LightGray" Width="2" Margin="0,10"/>
+
+        <!-- Tytuł "Endpoints of the API" wyświetlany w prawym górnym rogu -->
+        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Endpoints of the API" FontSize="24" FontWeight="Bold" Margin="0,10,0,20" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+
+        <!-- Horizontal Separator -->
+        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Background="LightGray" Height="2" Margin="10,45,0,0"/>
+
+        <!-- Nazwa API -->
+        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding ApiName}" Foreground="#FFC107" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,0,20,10" VerticalAlignment="Top" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+
+        <!-- Formularz dodawania nowego endpointa -->
+        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,10,20,10">
+            <TextBox Watermark="Enter new endpoint name" Width="360" Text="{Binding NewEndpointName, Mode=TwoWay}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <TextBox Watermark="Enter endpoint path" Width="360" Text="{Binding NewEndpointPath, Mode=TwoWay}" Margin="0,10,0,0" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <ComboBox Width="360" Margin="0,10,0,0" SelectedItem="{Binding NewEndpointMethod, Mode=TwoWay}" ItemsSource="{Binding HttpMethods}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <Button Content="Add New Endpoint" Width="360" Margin="0,10,0,0" Command="{Binding AddEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" FontWeight="Bold" Width="360" TextWrapping="Wrap" Margin="0,10,0,0" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+        </StackPanel>
+
+        <!-- Przyciski akcji -->
+        <UniformGrid Grid.Row="4" Grid.Column="0" Rows="1" Columns="2" Margin="0,10,20,10">
+            <Button Content="Edit Selected" Width="175" Margin="5,0" Command="{Binding EditSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <Button Content="Delete Selected" Width="175" Command="{Binding DeleteSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+        </UniformGrid>
+
+        <!-- Lista endpointów -->
+        <ListBox Grid.Row="2" Grid.RowSpan="3" Grid.Column="2" Margin="20,10,20,10" ItemsSource="{Binding AvailableEndpoints}" SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsPathsViewModel">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding Method}" FontWeight="Bold" Foreground="#FFC107"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="5,0,5,0"/>
+                        <TextBlock Grid.Column="2" Text="Endpoint path:" FontStyle="Italic" Foreground="DarkGray" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Column="3" Text="{Binding Path}" FontStyle="Italic" Foreground="DarkGray" Margin="5,0,0,0"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+
+
+
+    </Grid>
+</UserControl>
+
+
+EditApiDetailsPathsView.axaml.cs
+
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using QuickEndpoint.ViewModels;
+
+namespace QuickEndpoint.Views
+{
+    public partial class EditApiDetailsPathsView : UserControl
+    {
+        public EditApiDetailsPathsView()
+        {
+            InitializeComponent();
+            DataContext = new EditApiDetailsPathsViewModel();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+    }
+}
+
+
 EditApiDetailsView.axaml
 
 <UserControl xmlns="https://github.com/avaloniaui"
@@ -877,26 +1483,66 @@ EditApiDetailsView.axaml
              VerticalAlignment="Stretch"
              xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
              x:CompileBindings="True">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Dla tytułu "Endpoints of the API" -->
+            <RowDefinition Height="Auto"/> <!-- Dla nazwy API -->
+            <RowDefinition Height="Auto"/> <!-- Dla formularza dodawania nowego endpointa -->
+            <RowDefinition Height="*"/>    <!-- Dla listy endpointów -->
+            <RowDefinition Height="Auto"/> <!-- Dla przycisków akcji -->
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"/> <!-- Lewa kolumna dla formularza i przycisków -->
+            <ColumnDefinition Width="2"/>   <!-- Separator -->
+            <ColumnDefinition Width="*"/>   <!-- Prawa kolumna dla listy -->
+        </Grid.ColumnDefinitions>
 
-    <DockPanel LastChildFill="True">
-        <!-- Left Sidebar for Navigation -->
-        <ListBox DockPanel.Dock="Left" Width="200" ItemsSource="{Binding AvailableEndpoints}"
-                 SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsViewModel">
+        <!-- Separator -->
+        <Border Grid.Row="0" Grid.RowSpan="5" Grid.Column="1" Background="LightGray" Width="2" Margin="0,10"/>
+
+        <!-- Tytuł "Endpoints of the API" wyświetlany w prawym górnym rogu -->
+        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Endpoints of the API" FontSize="24" FontWeight="Bold" Margin="0,10,0,20" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+
+        <!-- Horizontal Separator -->
+        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Background="LightGray" Height="2" Margin="10,45,0,0"/>
+
+        <!-- Nazwa API -->
+        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding ApiName}" Foreground="#FFC107" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,0,20,10" VerticalAlignment="Top" x:DataType="vm:EditApiDetailsViewModel"/>
+
+        <!-- Formularz dodawania nowego endpointa -->
+        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,10,20,10">
+            <TextBox Watermark="Enter new endpoint name" Width="360" Text="{Binding NewEndpointName, Mode=TwoWay}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <Button Content="Add New Endpoint" Width="360" Margin="0,10,0,0" Command="{Binding AddOriginCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" FontWeight="Bold" Width="360" TextWrapping="Wrap" Margin="0,10,0,0" x:DataType="vm:EditApiDetailsViewModel"/>
+        </StackPanel>
+
+        <!-- Przyciski akcji -->
+        <UniformGrid Grid.Row="4" Grid.Column="0" Rows="1" Columns="2" Margin="0,10,20,10">
+            <Button Content="Edit Selected" Width="175" Margin="5,0" Command="{Binding EditSelectedOriginCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <Button Content="Delete Selected" Width="175" Command="{Binding DeleteSelectedOriginCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
+        </UniformGrid>
+
+        <!-- Lista endpointów -->
+        <ListBox Grid.Row="2" Grid.RowSpan="3" Grid.Column="2" Margin="20,10,20,10" ItemsSource="{Binding AvailableOrigins}" SelectedItem="{Binding SelectedOrigin}" x:DataType="vm:EditApiDetailsViewModel">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="5,0,5,0"/>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <!-- Right upper corner for API Name and other details -->
-        <StackPanel HorizontalAlignment="Stretch">
-            <TextBlock Text="{Binding ApiName}" HorizontalAlignment="Right" Margin="10" 
-                       VerticalAlignment="Top" FontSize="16" FontWeight="Bold"
-                       x:DataType="vm:EditApiDetailsViewModel"/>
-            <!-- Other content goes here -->
-        </StackPanel>
-    </DockPanel>
+
+
+
+    </Grid>
 </UserControl>
 
 

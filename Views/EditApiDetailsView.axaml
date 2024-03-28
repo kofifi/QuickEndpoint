@@ -22,8 +22,8 @@
         <!-- Separator -->
         <Border Grid.Row="0" Grid.RowSpan="5" Grid.Column="1" Background="LightGray" Width="2" Margin="0,10"/>
 
-        <!-- Tytuł "Endpoints of the API" wyświetlany w prawym górnym rogu -->
-        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Endpoints of the API" FontSize="24" FontWeight="Bold" Margin="0,10,0,20" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+        <!-- Tytuł "Origins of the API" wyświetlany w prawym górnym rogu -->
+        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Origins of the API" FontSize="24" FontWeight="Bold" Margin="0,10,0,20" HorizontalAlignment="Right" VerticalAlignment="Top"/>
 
         <!-- Horizontal Separator -->
         <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Background="LightGray" Height="2" Margin="10,45,0,0"/>
@@ -31,23 +31,21 @@
         <!-- Nazwa API -->
         <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding ApiName}" Foreground="#FFC107" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,0,20,10" VerticalAlignment="Top" x:DataType="vm:EditApiDetailsViewModel"/>
 
-        <!-- Formularz dodawania nowego endpointa -->
+        <!-- Formularz dodawania nowego Origina -->
         <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,10,20,10">
-            <TextBox Watermark="Enter new endpoint name" Width="360" Text="{Binding NewEndpointName, Mode=TwoWay}" x:DataType="vm:EditApiDetailsViewModel"/>
-            <TextBox Watermark="Enter endpoint path" Width="360" Text="{Binding NewEndpointPath, Mode=TwoWay}" Margin="0,10,0,0" x:DataType="vm:EditApiDetailsViewModel"/>
-            <ComboBox Width="360" Margin="0,10,0,0" SelectedItem="{Binding NewEndpointMethod, Mode=TwoWay}" ItemsSource="{Binding HttpMethods}" x:DataType="vm:EditApiDetailsViewModel"/>
-            <Button Content="Add New Endpoint" Width="360" Margin="0,10,0,0" Command="{Binding AddEndpointCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <TextBox Watermark="Enter new origin name" Width="360" Text="{Binding NewOriginName, Mode=TwoWay}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <Button Content="Add New Origin" Width="360" Margin="0,10,0,0" Command="{Binding AddOriginCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" FontWeight="Bold" Width="360" TextWrapping="Wrap" Margin="0,10,0,0" x:DataType="vm:EditApiDetailsViewModel"/>
         </StackPanel>
 
         <!-- Przyciski akcji -->
         <UniformGrid Grid.Row="4" Grid.Column="0" Rows="1" Columns="2" Margin="0,10,20,10">
-            <Button Content="Edit Selected" Width="175" Margin="5,0" Command="{Binding EditSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
-            <Button Content="Delete Selected" Width="175" Command="{Binding DeleteSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <Button Content="Edit Selected" Width="175" Margin="5,0" Command="{Binding EditSelectedOriginCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
+            <Button Content="Delete Selected" Width="175" Command="{Binding DeleteSelectedOriginCommand}" x:DataType="vm:EditApiDetailsViewModel"/>
         </UniformGrid>
 
-        <!-- Lista endpointów -->
-        <ListBox Grid.Row="2" Grid.RowSpan="3" Grid.Column="2" Margin="20,10,20,10" ItemsSource="{Binding AvailableEndpoints}" SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsViewModel">
+        <!-- Lista Originów -->
+        <ListBox Grid.Row="2" Grid.RowSpan="3" Grid.Column="2" Margin="20,10,20,10" ItemsSource="{Binding AvailableOrigins}" SelectedItem="{Binding SelectedOrigin}" x:DataType="vm:EditApiDetailsViewModel">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -57,11 +55,8 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{Binding Method}" FontWeight="Bold" Foreground="#FFC107"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="5,0,5,0"/>
-                        <TextBlock Grid.Column="2" Text="Endpoint path:" FontStyle="Italic" Foreground="DarkGray" HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Column="3" Text="{Binding Path}" FontStyle="Italic" Foreground="DarkGray" Margin="5,0,0,0"/>
-                    </Grid>
+                        <TextBlock Grid.Column="1" Text="{Binding OriginName}" Margin="5,0,5,0"/>
+                        <TextBlock Grid.Column="2" Text="{Binding NumberOfEndpoints, StringFormat='({0} endpoints)'}" Foreground="Gray" Margin="5,0,5,0"/>                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

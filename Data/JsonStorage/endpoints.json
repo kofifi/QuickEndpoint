@@ -1,0 +1,16 @@
+[
+  {
+    "Name": "test",
+    "Method": "GET",
+    "Path": "test",
+    "ApiName": "test",
+    "OriginName": "test"
+  },
+  {
+    "Name": "fwafwa",
+    "Method": "GET",
+    "Path": "swafaw",
+    "ApiName": "test",
+    "OriginName": "test"
+  }
+]

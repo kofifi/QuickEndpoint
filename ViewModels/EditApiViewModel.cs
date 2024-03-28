@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using Avalonia.Collections;
+using QuickEndpoint.Services;
 
 namespace QuickEndpoint.ViewModels;
 public class EditApiViewModel : ViewModelBase
@@ -34,10 +35,10 @@ public class EditApiViewModel : ViewModelBase
             RefreshAvailableApis(); 
         }
 
+
         private void EditApi()
         {
-            // Assuming MainWindowViewModel.Current has been implemented to allow changing the current ViewModel.
-            var editDetailsViewModel = new EditApiDetailsViewModel
+            var editDetailsViewModel = new EditApiDetailsViewModel(new FileDataService(), new LoggerService())
             {
                 ApiName = this.ApiName // Passing the ApiName to the new ViewModel.
             };

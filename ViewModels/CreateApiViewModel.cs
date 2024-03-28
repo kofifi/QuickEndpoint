@@ -62,88 +62,122 @@ public class CreateApiViewModel : ViewModelBase
         // Other initializations...
     }
 
-    private async Task CreateApiAsync()
+private async Task CreateApiAsync()
+{
+    IsCreatingApi = true;
+    CreateApiProgress = 0.0;
+    LogDebugInfo("Starting API creation process.");
+
+    try
     {
-        IsCreatingApi = true;
-        CreateApiProgress = 0.0; // Start progress at 0%
-        LogDebugInfo("CreateApi method execution started.");
+        await InitializeSetupAsync();
 
-        try
-        {
-            // Simulate initial setup work
-            await Task.Delay(500); // Simulate some initial work
-            CreateApiProgress = 0.1; // Update progress to 10%
-            LogDebugInfo("Initial setup completed.");
+        // Setup directories
+        var projectDirectory = await SetupProjectDirectoryAsync();
+        if (string.IsNullOrEmpty(projectDirectory)) return;
 
-            // Directory and project setup
-            string baseDirectory = Environment.CurrentDirectory;
-            string apisDirectory = Path.Combine(baseDirectory, "Data", "CreatedApis");
-            if (!Directory.Exists(apisDirectory))
-            {
-                Directory.CreateDirectory(apisDirectory);
-            }
-            string projectDirectory = Path.Combine(apisDirectory, NameOfApi);
-            if (Directory.Exists(projectDirectory))
-            {
-                ErrorMessage = "API with this name already exists.";
-                return; // Wyjdź z metody, nie kontynuując tworzenia API
-            }
-            else
-            {
-                ErrorMessage = ""; // Wyczyść komunikat o błędzie, jeśli katalog nie istnieje
-            }
-            Directory.CreateDirectory(projectDirectory);
-            LogDebugInfo("Project directory setup completed.");
-            await Task.Delay(500); // Simulate time taken for directory setup
-            CreateApiProgress = 0.3; // Update progress to 30%
+        await CreateProjectAsync(projectDirectory);
+        await OverwriteProgramFileAsync(projectDirectory);
+        await CreateProjectStructureAsync(projectDirectory);
 
-            // Process start and execution
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = "new webapp",
-                WorkingDirectory = projectDirectory,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using (var process = new Process { StartInfo = startInfo })
-            {
-                process.Start();
-                LogDebugInfo("dotnet process started.");
-                while (!process.HasExited)
-                {
-                    await Task.Delay(1000); // Wait a bit before updating the progress
-                    CreateApiProgress = Math.Min(CreateApiProgress + 0.2, 0.9); // Ensure progress does not exceed 90%
-                }
-                string output = await process.StandardOutput.ReadToEndAsync();
-                string error = await process.StandardError.ReadToEndAsync();
-                if (!string.IsNullOrEmpty(output))
-                {
-                    File.WriteAllText(Path.Combine(projectDirectory, "api_creation_output.txt"), output);
-                }
-                if (!string.IsNullOrEmpty(error))
-                {
-                    LogDebugInfo($"dotnet process error: {error}");
-                }
-            }
-
-            await Task.Delay(500); // Finalize everything
-            CreateApiProgress = 1.0; // Ensure progress is set to 100% after completion
-            await Task.Delay(500); // Finalize everything
-            LogDebugInfo("API creation process completed.");
-        }
-        catch (Exception ex)
-        {
-            LogDebugInfo($"An error occurred: {ex.Message}");
-        }
-        finally
-        {
-            IsCreatingApi = false;
-        }
+        LogDebugInfo("API creation process completed successfully.");
     }
+    catch (Exception ex)
+    {
+        LogDebugInfo($"An error occurred during API creation: {ex.Message}");
+        ErrorMessage = "An error occurred. Please check the log for details.";
+    }
+    finally
+    {
+        IsCreatingApi = false;
+        CreateApiProgress = 1.0; // Ensure completion regardless of success.
+    }
+}
+
+private async Task OverwriteProgramFileAsync(string projectDirectory)
+{
+    string programCsPath = Path.Combine(projectDirectory, "Program.cs");
+    string programCsContent = @"
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+app.UseHttpsRedirection();
+app.MapControllers();
+
+app.Run();
+";
+
+    await File.WriteAllTextAsync(programCsPath, programCsContent);
+    LogDebugInfo($"Program.cs file overwritten with custom content.");
+    CreateApiProgress = 0.6; // Update progress.
+}
+
+private async Task<string> SetupProjectDirectoryAsync()
+{
+    string baseDirectory = Environment.CurrentDirectory;
+    string apisDirectory = Path.Combine(baseDirectory, "Data", "CreatedApis");
+
+    Directory.CreateDirectory(apisDirectory); // Ensure the base directory exists.
+
+    string projectDirectory = Path.Combine(apisDirectory, NameOfApi);
+    if (Directory.Exists(projectDirectory))
+    {
+        ErrorMessage = "API with this name already exists.";
+        return null;
+    }
+
+    Directory.CreateDirectory(projectDirectory);
+    LogDebugInfo("Project directory setup completed.");
+    await Task.Delay(500); // Simulate directory setup time.
+    CreateApiProgress = 0.2;
+
+    return projectDirectory;
+}
+
+private async Task CreateProjectAsync(string projectDirectory)
+{
+    var startInfo = new ProcessStartInfo
+    {
+        FileName = "dotnet",
+        Arguments = "new webapi --no-https",
+        WorkingDirectory = projectDirectory,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        UseShellExecute = false,
+        CreateNoWindow = true
+    };
+
+    using (var process = new Process { StartInfo = startInfo })
+    {
+        process.Start();
+        await process.WaitForExitAsync();
+        CreateApiProgress = 0.5;
+        LogDebugInfo("dotnet new webapi process completed.");
+    }
+}
+
+private async Task CreateProjectStructureAsync(string projectDirectory)
+{
+    string[] directories = { "Controllers", "Models", "Services", "Repositories" };
+    foreach (var dir in directories)
+    {
+        Directory.CreateDirectory(Path.Combine(projectDirectory, dir));
+    }
+    LogDebugInfo("Project structure created.");
+    await Task.Delay(500); // Simulate structure setup time.
+    CreateApiProgress = 0.7;
+}
+
+private async Task InitializeSetupAsync()
+{
+    await Task.Delay(500); // Simulate initial setup work.
+    LogDebugInfo("Initial setup completed.");
+    CreateApiProgress = 0.1;
+}
+
 
     private void LogDebugInfo(string message)
     {

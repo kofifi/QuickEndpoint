@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QuickEndpoint.Views.EditApiDetailsPathsView"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             xmlns:vm="clr-namespace:QuickEndpoint.ViewModels"
+             x:CompileBindings="True">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Dla tytułu "Endpoints of the API" -->
+            <RowDefinition Height="Auto"/> <!-- Dla nazwy API -->
+            <RowDefinition Height="Auto"/> <!-- Dla formularza dodawania nowego endpointa -->
+            <RowDefinition Height="*"/>    <!-- Dla listy endpointów -->
+            <RowDefinition Height="Auto"/> <!-- Dla przycisków akcji -->
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"/> <!-- Lewa kolumna dla formularza i przycisków -->
+            <ColumnDefinition Width="2"/>   <!-- Separator -->
+            <ColumnDefinition Width="*"/>   <!-- Prawa kolumna dla listy -->
+        </Grid.ColumnDefinitions>
+
+        <!-- Separator -->
+        <Border Grid.Row="0" Grid.RowSpan="5" Grid.Column="1" Background="LightGray" Width="2" Margin="0,10"/>
+
+        <!-- Tytuł "Endpoints of the API" wyświetlany w prawym górnym rogu -->
+        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Endpoints of the API Origin" FontSize="24" FontWeight="Bold" Margin="0,10,0,20" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+
+        <!-- Horizontal Separator -->
+        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Background="LightGray" Height="2" Margin="10,45,0,0"/>
+
+        <!-- Nazwa API -->
+        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding OriginName}" Foreground="#FFC107" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,0,20,10" VerticalAlignment="Top" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+
+        <!-- Formularz dodawania nowego endpointa -->
+        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,10,20,10">
+            <TextBox Watermark="Enter new endpoint name" Width="360" Text="{Binding NewEndpointName, Mode=TwoWay}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <TextBox Watermark="Enter endpoint path" Width="360" Text="{Binding NewEndpointPath, Mode=TwoWay}" Margin="0,10,0,0" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <ComboBox Width="360" Margin="0,10,0,0" SelectedItem="{Binding NewEndpointMethod, Mode=TwoWay}" ItemsSource="{Binding HttpMethods}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <Button Content="Add New Endpoint" Width="360" Margin="0,10,0,0" Command="{Binding AddEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" FontWeight="Bold" Width="360" TextWrapping="Wrap" Margin="0,10,0,0" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+        </StackPanel>
+
+        <!-- Przyciski akcji -->
+        <UniformGrid Grid.Row="4" Grid.Column="0" Rows="1" Columns="2" Margin="0,10,20,10">
+            <Button Content="Edit Selected" Width="175" Margin="5,0" Command="{Binding EditSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <Button Content="Delete Selected" Width="175" Command="{Binding DeleteSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+        </UniformGrid>
+
+        <!-- Lista endpointów -->
+        <ListBox Grid.Row="2" Grid.RowSpan="3" Grid.Column="2" Margin="20,10,20,10" ItemsSource="{Binding AvailableEndpoints}" SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsPathsViewModel">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding Method}" FontWeight="Bold" Foreground="#FFC107"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="5,0,5,0"/>
+                        <TextBlock Grid.Column="2" Text="Endpoint path:" FontStyle="Italic" Foreground="DarkGray" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Column="3" Text="{Binding Path}" FontStyle="Italic" Foreground="DarkGray" Margin="5,0,0,0"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+
+
+
+    </Grid>
+</UserControl>
