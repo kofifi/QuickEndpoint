@@ -1,13 +1,12 @@
-using System.Linq; // Add this line at the top of your file
+using System.Linq; 
 using ReactiveUI;
 using Avalonia.Collections;
 using System.Reactive;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using System;
-using QuickEndpoint.Services; // Make sure to include the namespace for FileDataService
+using QuickEndpoint.Services; 
 
 namespace QuickEndpoint.ViewModels;
 
@@ -16,34 +15,34 @@ public class Endpoint
     public string Name { get; set; }
     public string Method { get; set; }
     public string Path { get; set; }
-    public string ApiName { get; set; } // Identifies the API
-    public string OriginName { get; set; } // NEW: Identifies the Origin within the API
+    public string ApiName { get; set; }
+    public string OriginName { get; set; }
 }
 
 public class EndpointDisplay
 {
     public string Name { get; set; }
     public string Method { get; set; }
-    public string Path { get; set; } // Add this line
+    public string Path { get; set; }
     public string DisplayName => $"{Method} {Name} {Path}";
 }
+
 public class EditApiDetailsPathsViewModel : ViewModelBase
 {
     private AvaloniaList<EndpointDisplay> _availableEndpoints;
     private EndpointDisplay _selectedEndpoint;
     private string _apiName;
-    private string _originName; // NEW: Holds the selected origin's name
-    private readonly FileDataService _fileDataService;
+    private string _originName;
+    private readonly IFileDataService _fileDataService;
+    private readonly ILoggerService _logger;
 
-
-    // Add a property to set the origin name when an origin is selected
     public string OriginName
     {
         get => _originName;
         set
         {
             this.RaiseAndSetIfChanged(ref _originName, value);
-            RefreshApiListAsync().ConfigureAwait(false); // Refresh list when origin changes
+            RefreshApiListAsync().ConfigureAwait(false);
         }
     }
     
@@ -54,7 +53,7 @@ public class EditApiDetailsPathsViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _newEndpointPath, value);
     }
 
-    private string _newEndpointMethod = "GET"; // Default value
+    private string _newEndpointMethod = "GET";
     public string NewEndpointMethod
     {
         get => _newEndpointMethod;
@@ -99,17 +98,15 @@ public class EditApiDetailsPathsViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
     }
 
-
-
     public ReactiveCommand<Unit, Unit> RefreshApiListCommand { get; private set; }
     public ReactiveCommand<Unit, Unit> AddEndpointCommand { get; private set; }
     public ReactiveCommand<Unit, Unit> EditSelectedEndpointCommand { get; private set; }
     public ReactiveCommand<Unit, Unit> DeleteSelectedEndpointCommand { get; private set; }
-    
 
-    public EditApiDetailsPathsViewModel()
+ public EditApiDetailsPathsViewModel()
     {
-        _fileDataService = new FileDataService(); // Initialize FileDataService here
+        _fileDataService = new FileDataService();
+        _logger = new LoggerService(); 
         RefreshApiListCommand = ReactiveCommand.CreateFromTask(RefreshApiListAsync);
         AddEndpointCommand = ReactiveCommand.CreateFromTask(AddEndpointAsync);
         EditSelectedEndpointCommand = ReactiveCommand.CreateFromTask(EditSelectedEndpointAsync, this.WhenAnyValue((EditApiDetailsPathsViewModel x) => x.SelectedEndpoint, (EndpointDisplay selectedEndpoint) => selectedEndpoint != null));
@@ -120,7 +117,6 @@ public class EditApiDetailsPathsViewModel : ViewModelBase
         // Automatically refresh the list of endpoints when the ViewModel is created
         RefreshApiListAsync().ConfigureAwait(false);
     }
-
 
 private async Task RefreshApiListAsync()
 {
@@ -145,150 +141,192 @@ private async Task RefreshApiListAsync()
 
 private async Task AddEndpointAsync()
 {
+    _logger.Log($"Starting to add new endpoint: {NewEndpointName}");
     string apiDirectoryPath = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", ApiName);
 
     if (string.IsNullOrWhiteSpace(NewEndpointName) || string.IsNullOrWhiteSpace(NewEndpointPath))
     {
         ErrorMessage = "Both the name and path of the new endpoint are required.";
+        _logger.Log($"Failed to add endpoint due to missing name or path. Name: {NewEndpointName}, Path: {NewEndpointPath}");
         return;
     }
 
-    // Ładowanie istniejących endpointów za pomocą FileDataService
-    var endpoints = await _fileDataService.LoadDataAsync<Endpoint>("endpoints");
-
-    // Sprawdzanie duplikatów endpointów w obrębie tego samego API i origin
-    if (endpoints.Any(ep => ep.Name.Equals(NewEndpointName, StringComparison.OrdinalIgnoreCase)
-                            && ep.ApiName == ApiName && ep.OriginName == OriginName))
+    try
     {
-        ErrorMessage = "An endpoint with this name already exists within the selected origin. Please use a different name.";
-        return;
+        var endpoints = await _fileDataService.LoadDataAsync<Endpoint>("endpoints");
+
+        var newEndpoint = new Endpoint
+        {
+            Name = NewEndpointName,
+            Method = NewEndpointMethod,
+            Path = NewEndpointPath,
+            ApiName = ApiName,
+            OriginName = OriginName
+        };
+
+        endpoints.Add(newEndpoint);
+        await _fileDataService.SaveDataAsync("endpoints", endpoints);
+        AvailableEndpoints.Add(new EndpointDisplay { Name = newEndpoint.Name, Method = newEndpoint.Method, Path = newEndpoint.Path });
+        _logger.Log($"Successfully added new endpoint: {newEndpoint.Name} with method {newEndpoint.Method} and path {newEndpoint.Path}");
+
+        string controllersDirectory = Path.Combine(apiDirectoryPath, "Controllers");
+        Directory.CreateDirectory(controllersDirectory);
+        string controllerFilePath = Path.Combine(controllersDirectory, $"{newEndpoint.OriginName}Controller.cs");
+
+        if (File.Exists(controllerFilePath))
+        {
+            string existingControllerCode = await File.ReadAllTextAsync(controllerFilePath);
+            // Remove the last two curly braces
+            int lastCurlyBraceIndex = existingControllerCode.LastIndexOf("}");
+            if (lastCurlyBraceIndex > 0)
+            {
+                existingControllerCode = existingControllerCode.Remove(lastCurlyBraceIndex);
+                lastCurlyBraceIndex = existingControllerCode.LastIndexOf("}");
+                if (lastCurlyBraceIndex > 0)
+                {
+                    existingControllerCode = existingControllerCode.Remove(lastCurlyBraceIndex);
+                }
+            }
+            string newEndpointCode = CreateControllerCode(newEndpoint, appendMode: true);
+            string updatedControllerCode = existingControllerCode + newEndpointCode + "\n}\n}";
+            await File.WriteAllTextAsync(controllerFilePath, updatedControllerCode);
+            _logger.Log($"Updated existing controller file at: {controllerFilePath}");
+        }
+        else
+        {
+            string controllerCode = CreateControllerCode(newEndpoint, appendMode: false);
+            await File.WriteAllTextAsync(controllerFilePath, controllerCode);
+            _logger.Log($"Created new controller file at: {controllerFilePath}");
+        }
+
+        NewEndpointName = string.Empty;
+        NewEndpointPath = string.Empty;
+        ErrorMessage = "";
     }
-
-    // Tworzenie nowego endpointu
-    var newEndpoint = new Endpoint
+    catch (Exception ex)
     {
-        Name = NewEndpointName,
-        Method = NewEndpointMethod,
-        Path = NewEndpointPath,
-        ApiName = ApiName,
-        OriginName = OriginName
-    };
-
-    // Dodawanie nowego endpointu do listy i zapisywanie zmian
-    endpoints.Add(newEndpoint);
-    await _fileDataService.SaveDataAsync("endpoints", endpoints);
-
-    // Aktualizacja UI
-    AvailableEndpoints.Add(new EndpointDisplay { Name = newEndpoint.Name, Method = newEndpoint.Method, Path = newEndpoint.Path });
-
-    // Tworzenie kodu kontrolera i zapisywanie pliku kontrolera
-    string controllerCode = CreateControllerCode(newEndpoint);
-    string controllersDirectory = Path.Combine(apiDirectoryPath, "Controllers");
-    Directory.CreateDirectory(controllersDirectory);
-    string controllerFilePath = Path.Combine(controllersDirectory, $"{newEndpoint.OriginName}{newEndpoint.Name}Controller.cs");
-    await File.WriteAllTextAsync(controllerFilePath, controllerCode);
-
-    // Resetowanie pól wejściowych
-    NewEndpointName = string.Empty;
-    NewEndpointPath = string.Empty;
-    ErrorMessage = "";
+        ErrorMessage = "Failed to add the endpoint due to an internal error.";
+        _logger.Log($"Exception encountered in AddEndpointAsync: {ex.Message}");
+    }
 }
 
-private string CreateControllerCode(Endpoint endpoint)
+
+private string CreateControllerCode(Endpoint endpoint, bool appendMode)
 {
+    _logger.Log($"Generating code for endpoint: {endpoint.Name}, Method: {endpoint.Method}, Path: {endpoint.Path}");
+
     string httpMethodAttribute = endpoint.Method switch
     {
-        "POST" => "[HttpPost]",
-        "PUT" => "[HttpPut]",
-        "DELETE" => "[HttpDelete]",
-        "PATCH" => "[HttpPatch]",
-        _ => "[HttpGet]"
+        "POST" => "HttpPost",
+        "PUT" => "HttpPut",
+        "DELETE" => "HttpDelete",
+        "PATCH" => "HttpPatch",
+        _ => "HttpGet"
     };
 
-    string actionMethod = endpoint.Method switch
+    // Generate a unique method name based on the endpoint path
+    string methodName = "Get" + endpoint.Path.Replace("/", string.Empty).Replace("{", string.Empty).Replace("}", string.Empty);
+
+    if (appendMode)
     {
-        "POST" => "Post",
-        "PUT" => "Put",
-        "DELETE" => "Delete",
-        "PATCH" => "Patch",
-        _ => "Get"
-    };
-
-    return $@"
+        return $@"
+        [{httpMethodAttribute}(""{endpoint.Name}/{endpoint.Path}"")]
+        public IActionResult {methodName}()
+        {{
+            // Logic for {endpoint.Path}
+            return Ok(""Response from {endpoint.Path}"");
+        }}";
+    }
+    else
+    {
+        return $@"
 using Microsoft.AspNetCore.Mvc;
 
 namespace {endpoint.ApiName}.Controllers
 {{
     [ApiController]
     [Route(""[controller]"")]
-    public class {endpoint.OriginName}{endpoint.Name}Controller : ControllerBase
+    public class {endpoint.OriginName}Controller : ControllerBase
     {{
-        {httpMethodAttribute}
-        [Route(""{endpoint.OriginName}{endpoint.Path}"")]
-        public IActionResult {actionMethod}()
+        [{httpMethodAttribute}(""{endpoint.Name}/{endpoint.Path}"")]
+        public IActionResult {methodName}()
         {{
-            return Ok(""{endpoint.OriginName}{endpoint.Name} response"");
+            // Logic for {endpoint.Path}
+            return Ok(""Response from {endpoint.Path}"");
         }}
     }}
 }}";
+    }
 }
 
 
 
-    private async Task EditSelectedEndpointAsync()
+private async Task EditSelectedEndpointAsync()
+{
+    _logger.Log("Starting to edit an endpoint.");
+    List<Endpoint> endpoints = await LoadEndpointsAsync();
+
+    var endpointToEdit = endpoints.FirstOrDefault(e => e.Name == SelectedEndpoint.Name && e.ApiName == ApiName && e.OriginName == OriginName);
+    if (endpointToEdit != null)
     {
-        List<Endpoint> endpoints = await LoadEndpointsAsync();
+        _logger.Log($"Editing endpoint: {endpointToEdit.Name}, API: {endpointToEdit.ApiName}, Origin: {endpointToEdit.OriginName}");
 
-        var endpointToEdit = endpoints.FirstOrDefault(e => e.Name == SelectedEndpoint.Name 
-                                                        && e.ApiName == ApiName 
-                                                        && e.OriginName == OriginName);
-        if (endpointToEdit != null)
-        {
-            // Update endpoint details based on user input
-            endpointToEdit.Method = NewEndpointMethod;
-            endpointToEdit.Path = NewEndpointPath;
+        endpointToEdit.Method = NewEndpointMethod;
+        endpointToEdit.Path = NewEndpointPath;
 
-            await SaveEndpointsAsync(endpoints);
-            RefreshApiListAsync().ConfigureAwait(false);
-        }
+        await SaveEndpointsAsync(endpoints);
+        await RefreshApiListAsync().ConfigureAwait(false);
+
+        _logger.Log($"Successfully edited endpoint: {endpointToEdit.Name}");
     }
+    else
+    {
+        _logger.Log($"No matching endpoint found to edit for Name: {SelectedEndpoint.Name}, API: {ApiName}, Origin: {OriginName}");
+    }
+}
+
 
 private async Task DeleteSelectedEndpointAsync()
 {
-    if (SelectedEndpoint != null)
+    if (SelectedEndpoint == null)
     {
-        var endpoints = await _fileDataService.LoadDataAsync<Endpoint>("endpoints");
+        _logger.Log("No selected endpoint to delete.");
+        return;
+    }
 
-        // Znajdź i usuń wybrany endpoint
-        var endpointToDelete = endpoints.FirstOrDefault(e => e.Name == SelectedEndpoint.Name && e.ApiName == ApiName && e.OriginName == OriginName);
-        if (endpointToDelete != null)
+    _logger.Log($"Attempting to delete endpoint: {SelectedEndpoint.Name}");
+    var endpoints = await _fileDataService.LoadDataAsync<Endpoint>("endpoints");
+
+    var endpointToDelete = endpoints.FirstOrDefault(e => e.Name == SelectedEndpoint.Name && e.ApiName == ApiName && e.OriginName == OriginName);
+    if (endpointToDelete != null)
+    {
+        string controllerFileName = $"{endpointToDelete.OriginName}{endpointToDelete.Name}Controller.cs";
+        string controllersDirectory = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", endpointToDelete.ApiName, "Controllers");
+        string controllerFilePath = Path.Combine(controllersDirectory, controllerFileName);
+
+        if (File.Exists(controllerFilePath))
         {
-            // Usuń plik kontrolera (jeśli to konieczne, zaimplementuj logikę tutaj)
-            // Należy rozważyć przeniesienie logiki usuwania plików kontrolera do dedykowanej metody wewnątrz FileDataService lub innego serwisu
-            string controllerFileName = $"{endpointToDelete.OriginName}{endpointToDelete.Name}Controller.cs";
-            string controllersDirectory = Path.Combine(Environment.CurrentDirectory, "Data", "CreatedApis", endpointToDelete.ApiName, "Controllers");
-            string controllerFilePath = Path.Combine(controllersDirectory, controllerFileName);
-
-            if (File.Exists(controllerFilePath))
+            try
             {
-                try
-                {
-                    File.Delete(controllerFilePath);
-                    Console.WriteLine($"Deleted controller file: {controllerFilePath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error deleting controller file '{controllerFileName}': {ex.Message}");
-                }
+                File.Delete(controllerFilePath);
+                _logger.Log($"Deleted controller file: {controllerFilePath}");
             }
-
-            // Usuń endpoint z listy i zapisz zmiany
-            endpoints.Remove(endpointToDelete);
-            await _fileDataService.SaveDataAsync("endpoints", endpoints);
-
-            // Odśwież listę endpointów
-            await RefreshApiListAsync();
+            catch (Exception ex)
+            {
+                _logger.Log($"Error deleting controller file '{controllerFileName}': {ex.Message}");
+            }
         }
+
+        endpoints.Remove(endpointToDelete);
+        await _fileDataService.SaveDataAsync("endpoints", endpoints);
+
+        await RefreshApiListAsync();
+
+        _logger.Log($"Successfully deleted endpoint: {endpointToDelete.Name}");
+    }
+    else
+    {
+        _logger.Log($"No matching endpoint found to delete for Name: {SelectedEndpoint.Name}, API: {ApiName}, Origin: {OriginName}");
     }
 }
         private async Task<List<Endpoint>> LoadEndpointsAsync()

@@ -228,7 +228,7 @@ public class EditApiDetailsViewModel : ViewModelBase
     private async Task DeleteAssociatedEndpointsAsync(string originName)
     {
         // Use FileDataService to load existing endpoints
-        var endpoints = await _fileDataService.LoadDataAsync<Endpoint>("endpoints"); // Tutaj był błąd, powinno być "endpoints"
+        var endpoints = await _fileDataService.LoadDataAsync<Endpoint>("endpoints"); 
 
         // Identify endpoints associated with the origin
         var endpointsToDelete = endpoints.Where(endpoint => endpoint.OriginName == originName).ToList();
