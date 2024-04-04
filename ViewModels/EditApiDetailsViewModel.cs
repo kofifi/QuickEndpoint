@@ -94,6 +94,8 @@ public class EditApiDetailsViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> AddOriginCommand { get; private set; }
     public ReactiveCommand<Unit, Unit> EditSelectedOriginCommand { get; private set; }
     public ReactiveCommand<Unit, Unit> DeleteSelectedOriginCommand { get; private set; }
+    public ReactiveCommand<Unit, Unit> GoBackToPreviousViewCommand { get; private set; }
+
 
 
     public EditApiDetailsViewModel(IFileDataService fileDataService, ILoggerService logger)
@@ -110,8 +112,13 @@ public class EditApiDetailsViewModel : ViewModelBase
         EditSelectedOriginCommand = ReactiveCommand.CreateFromTask(EditSelectedOriginAsync, this.WhenAnyValue((EditApiDetailsViewModel x) => x.SelectedOrigin, (OriginDisplay selectedOrigin) => selectedOrigin != null));
         DeleteSelectedOriginCommand = ReactiveCommand.CreateFromTask(DeleteSelectedOriginAsync, this.WhenAnyValue((EditApiDetailsViewModel x) => x.SelectedOrigin, (OriginDisplay selectedOrigin) => selectedOrigin != null));
         AvailableOrigins = new AvaloniaList<OriginDisplay>();
-    }
 
+        GoBackToPreviousViewCommand = ReactiveCommand.Create(GoBackToPreviousView);
+    }
+    private void GoBackToPreviousView()
+    {
+        MainWindowViewModel.Current.CurrentViewModel = new EditApiViewModel();
+    }
 
     private async Task RefreshOriginListAsync()
     {

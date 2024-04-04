@@ -12,11 +12,12 @@
             <RowDefinition Height="Auto"/> <!-- Dla formularza dodawania nowego endpointa -->
             <RowDefinition Height="*"/>    <!-- Dla listy endpointów -->
             <RowDefinition Height="Auto"/> <!-- Dla przycisków akcji -->
+            <RowDefinition Height="Auto"/> <!-- Dla przycisków akcji -->
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="400"/> <!-- Lewa kolumna dla formularza i przycisków -->
-            <ColumnDefinition Width="2"/>   <!-- Separator -->
-            <ColumnDefinition Width="*"/>   <!-- Prawa kolumna dla listy -->
+            <ColumnDefinition Width="400"/> <!-- Fixed width for the form area -->
+            <ColumnDefinition Width="2"/>   <!-- Separator width -->
+            <ColumnDefinition Width="*"/>   <!-- Remaining space for the list -->
         </Grid.ColumnDefinitions>
 
         <!-- Separator -->
@@ -42,9 +43,14 @@
 
         <!-- Przyciski akcji -->
         <UniformGrid Grid.Row="4" Grid.Column="0" Rows="1" Columns="2" Margin="0,10,20,10">
-            <Button Content="Edit Selected" Width="175" Margin="5,0" Command="{Binding EditSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
-            <Button Content="Delete Selected" Width="175" Command="{Binding DeleteSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <Button Content="Edit Selected" Width="170" Margin="5,0" Command="{Binding EditSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+            <Button Content="Delete Selected" Width="170" Command="{Binding DeleteSelectedEndpointCommand}" x:DataType="vm:EditApiDetailsPathsViewModel"/>
         </UniformGrid>
+
+        <UniformGrid Grid.Row="5" Grid.Column="0" Rows="1" Columns="1" Margin="0,10,20,10">
+            <Button Content="Go Back" Width="360" Margin="0,10,0,0" Command="{Binding GoBackToPreviousViewCommand}" HorizontalAlignment="Stretch" x:DataType="vm:EditApiDetailsPathsViewModel"/>
+        </UniformGrid>
+
 
         <!-- Lista endpointów -->
         <ListBox Grid.Row="2" Grid.RowSpan="3" Grid.Column="2" Margin="20,10,20,10" ItemsSource="{Binding AvailableEndpoints}" SelectedItem="{Binding SelectedEndpoint}" x:DataType="vm:EditApiDetailsPathsViewModel">

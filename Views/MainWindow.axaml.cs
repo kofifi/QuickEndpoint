@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia;
 using Avalonia.Markup.Xaml;
 using QuickEndpoint.ViewModels;
 
@@ -10,13 +9,14 @@ namespace QuickEndpoint.Views
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
+            // Usuwamy bezpośrednie tworzenie nowej instancji MainWindowViewModel
+            // i zamiast tego korzystamy z już zainicjalizowanej instancji.
+            DataContext = MainWindowViewModel.Current;
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            this.AttachDevTools();  // Call AttachDevTools here
         }
     }
 }

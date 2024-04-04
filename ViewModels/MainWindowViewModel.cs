@@ -1,16 +1,21 @@
-﻿using System;
-using ReactiveUI;
+﻿using ReactiveUI;
 using System.Reactive;
 
-namespace QuickEndpoint.ViewModels;
+namespace QuickEndpoint.ViewModels
+{
+    using QuickEndpoint.Services;
+
     public class MainWindowViewModel : ReactiveObject
     {
+        private readonly NavigationService _navigationService;
         public ReactiveCommand<Unit, Unit> CreateApiCommand { get; }
         public ReactiveCommand<Unit, Unit> EditApiCommand { get; }
         public ReactiveCommand<Unit, Unit> PublishApiCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenSettingsCommand { get; }
-        private static MainWindowViewModel _current;
+
+        private static MainWindowViewModel _current = new MainWindowViewModel();
         public static MainWindowViewModel Current => _current;
+
         private ViewModelBase _currentViewModel;
         public ViewModelBase CurrentViewModel
         {
@@ -18,35 +23,24 @@ namespace QuickEndpoint.ViewModels;
             set => this.RaiseAndSetIfChanged(ref _currentViewModel, value);
         }
 
-        public MainWindowViewModel()
+        private MainWindowViewModel()
         {
-            CreateApiCommand = ReactiveCommand.Create(() => ExecuteCreateApi());
-            EditApiCommand = ReactiveCommand.Create(() => ExecuteEditApi());
-            PublishApiCommand = ReactiveCommand.Create(() => ExecutePublishApi());
-            OpenSettingsCommand = ReactiveCommand.Create(() => ExecuteOpenSettings());
+            _navigationService = new NavigationService(this);
 
-            // Ustawienie początkowego ViewModelu
-            CurrentViewModel = new DashboardViewModel();
-            _current = this;
+            CreateApiCommand = ReactiveCommand.Create(() => _navigationService.NavigateTo<CreateApiViewModel>());
+            EditApiCommand = ReactiveCommand.Create(() => _navigationService.NavigateTo<EditApiViewModel>());
+            PublishApiCommand = ReactiveCommand.Create(() => _navigationService.NavigateTo<PublishApiViewModel>());
+            OpenSettingsCommand = ReactiveCommand.Create(() => _navigationService.NavigateTo<OpenSettingsViewModel>());
+
+            _navigationService.NavigateTo<DashboardViewModel>();
         }
 
-        private void ExecuteCreateApi()
+        public static void InitializeCurrent()
         {
-            CurrentViewModel = new CreateApiViewModel();
-        }
-
-        private void ExecuteEditApi()
-        {
-            CurrentViewModel = new EditApiViewModel();
-        }
-
-        private void ExecutePublishApi()
-        {
-            CurrentViewModel = new PublishApiViewModel();
-        }
-
-        private void ExecuteOpenSettings()
-        {
-            CurrentViewModel = new OpenSettingsViewModel();
+            if (_current == null)
+            {
+                _current = new MainWindowViewModel();
+            }
         }
     }
+}

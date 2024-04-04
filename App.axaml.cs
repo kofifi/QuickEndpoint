@@ -17,9 +17,13 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            // Upewnij się, że instancja MainWindowViewModel jest zainicjalizowana
+            MainWindowViewModel.InitializeCurrent();
+
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(),
+                // Użyj istniejącej instancji MainWindowViewModel
+                DataContext = MainWindowViewModel.Current,
             };
         }
 
