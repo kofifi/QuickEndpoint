@@ -1,0 +1,6 @@
+@ApiKofi_HostAddress = http://localhost:5260
+
+GET {{ApiKofi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

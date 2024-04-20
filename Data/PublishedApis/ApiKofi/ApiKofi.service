@@ -1,0 +1,11 @@
+[Unit]
+        Description=ApiKofi .NET Application Service
+
+        [Service]
+        WorkingDirectory=/home/kfirlej/Documents/VSCP/QuickEndpoint/Data/PublishedApis/ApiKofi
+        ExecStart=/usr/bin/dotnet /home/kfirlej/Documents/VSCP/QuickEndpoint/Data/PublishedApis/ApiKofi/ApiKofi.dll
+        Restart=always
+        # Other configurations like User, Environment variables can be added here
+
+        [Install]
+        WantedBy=multi-user.target

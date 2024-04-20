@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using Avalonia.Collections;
 using ReactiveUI;
+using System.Runtime.InteropServices;
 using QuickEndpoint_MainApp.Modules;
 using System.Threading.Tasks;
 
@@ -107,8 +108,16 @@ namespace QuickEndpoint.ViewModels
                 await Task.Delay(500);
                 publishApiProgress = 0.8; // Tool copy completed
 
-                InstallerScriptGenerator.GenerateBatchInstallScript(ApiName, publishedApisDir, LogDebugInfo);
-                InstallerScriptGenerator.GenerateBatchUninstallScript(ApiName, publishedApisDir, LogDebugInfo);
+                if (OSHelper.IsWindows())
+                {
+                    InstallerScriptGenerator.GenerateBatchInstallScript(ApiName, publishedApisDir, LogDebugInfo);
+                    InstallerScriptGenerator.GenerateBatchUninstallScript(ApiName, publishedApisDir, LogDebugInfo);
+                }
+                else if (OSHelper.IsLinux())
+                {
+                    InstallerScriptGenerator.GenerateBashInstallScript(ApiName, publishedApisDir, LogDebugInfo);
+                    InstallerScriptGenerator.GenerateBashUninstallScript(ApiName, publishedApisDir, LogDebugInfo);
+                }
                 LogDebugInfo($"Scripts for '{ApiName}' generated.");
 
                 // Setp 5: Finalize the process
@@ -159,6 +168,11 @@ namespace QuickEndpoint.ViewModels
 namespace QuickEndpoint_MainApp.Modules
 {
 
+    public static class OSHelper
+    {
+        public static bool IsWindows() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        public static bool IsLinux() => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+    }
     public static class ApplicationPublisher
     {
         public static void PublishApplication(string projectDir, string publishDir, string configuration, Action<string> logger)
@@ -199,6 +213,77 @@ namespace QuickEndpoint_MainApp.Modules
             File.WriteAllText(uninstallScriptPath, batchContent);
             logger($"Uninstall script has been saved at: {uninstallScriptPath}");
         }
+        
+        public static void GenerateBashInstallScript(string appName, string directory, Action<string> logger)
+        {
+            string installScriptPath = Path.Combine(directory, "install.sh");
+            string serviceFilePath = Path.Combine(directory, $"{appName}.service");
+            string executablePath = "/usr/bin/dotnet";  // Path to the dotnet executable
+            string dllPath = Path.Combine(directory, $"{appName}.dll");  // Path to the main application DLL
+
+            string serviceContent = @$"[Unit]
+        Description={appName} .NET Application Service
+
+        [Service]
+        WorkingDirectory={directory}
+        ExecStart={executablePath} {dllPath}
+        Restart=always
+        # Other configurations like User, Environment variables can be added here
+
+        [Install]
+        WantedBy=multi-user.target";
+
+            File.WriteAllText(serviceFilePath, serviceContent);
+
+            string bashContent = @$"#!/bin/bash
+        echo 'Installing {appName}...'
+        sudo cp {appName}.service /etc/systemd/system/
+        if sudo systemctl enable {appName} && sudo systemctl start {appName}; then
+            echo 'Installation completed successfully.'
+        else
+            echo 'Failed to install and start {appName}.'
+        fi
+        read -p 'Press any key to continue...'";
+
+            File.WriteAllText(installScriptPath, bashContent);
+            logger($"Install script for Linux has been saved at: {installScriptPath}");
+        }
+
+
+public static void GenerateBashUninstallScript(string appName, string directory, Action<string> logger)
+{
+    string uninstallScriptPath = Path.Combine(directory, "uninstall.sh");
+    string bashContent = @$"#!/bin/bash
+echo 'Uninstalling {appName}...'
+if sudo systemctl stop {appName}; then
+    echo '{appName} stopped successfully.'
+else
+    echo 'Failed to stop {appName}.'
+fi
+
+if sudo systemctl disable {appName}; then
+    echo '{appName} disabled successfully.'
+else
+    echo 'Failed to disable {appName}.'
+fi
+
+SERVICE_FILE_PATH=""/etc/systemd/system/{appName}.service""
+if [ -f ""$SERVICE_FILE_PATH"" ]; then
+    sudo rm ""$SERVICE_FILE_PATH""
+    echo 'Service file removed successfully.'
+else
+    echo 'Service file not found.'
+fi
+
+sudo systemctl daemon-reload
+echo 'Systemd configuration reloaded.'
+echo 'Uninstallation completed.'
+read -p 'Press any key to continue...'";
+
+    File.WriteAllText(uninstallScriptPath, bashContent);
+    logger($"Uninstall script for Linux has been saved at: {uninstallScriptPath}");
+}
+
     }
 
 

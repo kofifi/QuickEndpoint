@@ -1,0 +1,16 @@
+[
+  {
+    "Name": "Endpoint1",
+    "Method": "GET",
+    "Path": "Path1",
+    "ApiName": "ApiKofi",
+    "OriginName": "Origin1"
+  },
+  {
+    "Name": "Endpoint2",
+    "Method": "POST",
+    "Path": "Path2",
+    "ApiName": "ApiKofi",
+    "OriginName": "Origin1"
+  }
+]
